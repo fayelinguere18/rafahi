@@ -64,6 +64,17 @@ button.go:hover{background:#34503c}
 #login input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;margin-bottom:10px}
 #login .e{color:var(--no-tx);min-height:20px;font-size:13px;margin-bottom:6px}
 @media (max-width:640px){.cards{grid-template-columns:1fr 1fr 1fr}.mc .v{font-size:18px}}
+.tabs{margin:0 0 14px}
+.sc{display:inline-flex;align-items:center;gap:4px;padding:2px 4px;border-radius:999px}
+.sc button{width:26px;height:26px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px;line-height:1;cursor:pointer}
+.sc button:disabled{opacity:.35;cursor:default}
+.sc .q{min-width:26px;text-align:center;font-weight:600;font-size:14px;outline:none;border-radius:5px;padding:1px 3px}
+.sc .q:focus{background:#f3ede0;box-shadow:0 0 0 1px var(--line)}
+.sc.low{background:var(--wa-bg);color:var(--wa-tx)}
+.sc.out{background:var(--no-bg);color:var(--no-tx)}
+.stt th,.stt td{text-align:center;white-space:nowrap}
+.stt th:first-child,.stt td:first-child{text-align:left}
+.stt .tt{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -88,6 +99,12 @@ button.go:hover{background:#34503c}
     </div>
   </div>
 
+  <div class="seg tabs tools" id="tabs">
+    <button data-v="orders" class="on">Commandes</button>
+    <button data-v="stock">Stock</button>
+  </div>
+
+  <div id="viewOrders">
   <div class="cards">
     <div class="mc"><div class="l">Clientes à livrer</div><div class="v" id="mA">0</div></div>
     <div class="mc"><div class="l">Articles à livrer</div><div class="v" id="mB">0</div></div>
@@ -120,6 +137,28 @@ button.go:hover{background:#34503c}
     <button class="b go" id="add">+ Ajouter une cliente</button>
     <button class="b" id="cap">Mode capture</button>
   </div>
+  </div>
+
+  <div id="viewStock" hidden>
+    <div class="cards">
+      <div class="mc"><div class="l">Pièces en stock</div><div class="v" id="sT">0</div></div>
+      <div class="mc"><div class="l">Stock bas (2 ou moins)</div><div class="v" id="sL">0</div></div>
+      <div class="mc"><div class="l">En rupture</div><div class="v" id="sO">0</div></div>
+    </div>
+    <div class="box">
+      <table class="stt">
+        <thead id="sHead"></thead>
+        <tbody id="sBody"></tbody>
+      </table>
+      <div class="empty" id="sEmpty" hidden>Aucun article en stock.</div>
+    </div>
+    <div class="bar tools">
+      <button class="b" id="addSize">+ Ajouter une taille</button>
+      <button class="b" id="addColor">+ Ajouter une couleur</button>
+      <span class="st" id="stS"></span>
+    </div>
+  </div>
+
   <div class="bar" id="capBack" hidden>
     <button class="b" id="capOff">Revenir à la modification</button>
   </div>
@@ -139,6 +178,10 @@ var COL={
 var code=store("get","rafahi_code")||"";
 var orders=[];
 var filter="tout";
+var view="orders";
+var stock=[];
+var pending={};
+var SIZES=["S","M","L","XL","XXL","XXXL","4XL"];
 
 function store(op,k,v){
   try{
@@ -363,7 +406,7 @@ $("loginBtn").addEventListener("click",function(){
 });
 $("code").addEventListener("keydown",function(e){if(e.key==="Enter")$("loginBtn").click();});
 $("logout").addEventListener("click",function(){logout("");});
-$("refresh").addEventListener("click",function(){load(false);});
+$("refresh").addEventListener("click",function(){if(view==="stock")loadStock(false);else load(false);});
 
 $("seg").addEventListener("click",function(e){
   var b=e.target.closest("button");
@@ -401,8 +444,246 @@ setInterval(function(){
   if($("app").hidden)return;
   var a=document.activeElement;
   if(a&&(a.isContentEditable||a.tagName==="INPUT"))return;
-  load(true);
+  if(view==="stock")loadStock(true);else load(true);
 },60000);
+
+function setStockStatus(t,err){
+  var e=$("stS");
+  e.textContent=t;
+  e.className="st"+(err?" err":"");
+}
+
+function loadStock(silent){
+  if(!silent)setStockStatus("Chargement...");
+  return api("GET","/stock").then(function(d){
+    stock=d.stock;
+    renderStock();
+    setStockStatus("À jour");
+  }).catch(function(e){
+    if(e.message!=="Code d'accès incorrect")setStockStatus("Erreur : "+e.message,true);
+  });
+}
+
+function renderStock(){
+  var colors=[],sizes=[],map={};
+  stock.forEach(function(it){
+    if(colors.indexOf(it.couleur)<0)colors.push(it.couleur);
+    if(sizes.indexOf(it.taille)<0)sizes.push(it.taille);
+    map[it.taille+"|"+it.couleur]=it;
+  });
+  sizes.sort(function(a,b){
+    var ia=SIZES.indexOf(a),ib=SIZES.indexOf(b);
+    return (ia<0?99:ia)-(ib<0?99:ib);
+  });
+  var head=$("sHead"),body=$("sBody");
+  head.innerHTML="";
+  body.innerHTML="";
+  $("sEmpty").hidden=stock.length>0;
+  var tr=document.createElement("tr");
+  var heads=["Taille"].concat(colors).concat(["Total"]);
+  heads.forEach(function(h,i){
+    var th=document.createElement("th");
+    th.appendChild(document.createTextNode(h));
+    if(i>0&&i<=colors.length)th.appendChild(delBtn("couleur",h));
+    tr.appendChild(th);
+  });
+  head.appendChild(tr);
+  var tot=0,low=0,out=0;
+  sizes.forEach(function(sz){
+    var r=document.createElement("tr");
+    var t0=document.createElement("td");
+    t0.style.fontWeight="600";
+    t0.appendChild(document.createTextNode(sz));
+    t0.appendChild(delBtn("taille",sz));
+    r.appendChild(t0);
+    var sum=0;
+    colors.forEach(function(c){
+      var td=document.createElement("td");
+      var it=map[sz+"|"+c];
+      if(it){
+        td.appendChild(stockCell(it));
+        sum+=it.qte;
+        tot+=it.qte;
+        if(it.qte===0)out++;else if(it.qte<=2)low++;
+      }else{
+        td.textContent="-";
+        td.style.color="var(--muted)";
+      }
+      r.appendChild(td);
+    });
+    var tt=document.createElement("td");
+    tt.className="tt";
+    tt.textContent=sum;
+    r.appendChild(tt);
+    body.appendChild(r);
+  });
+  $("sT").textContent=tot;
+  $("sL").textContent=low;
+  $("sO").textContent=out;
+}
+
+function stockCell(it){
+  var wrap=document.createElement("span");
+  wrap.className="sc"+(it.qte===0?" out":it.qte<=2?" low":"");
+  var m=document.createElement("button");
+  m.type="button";
+  m.textContent="\u2212";
+  m.setAttribute("aria-label","Vendu : "+it.taille+" "+it.couleur);
+  m.disabled=it.qte<=0;
+  m.addEventListener("click",function(){moveStock(it,-1);});
+  var q=document.createElement("span");
+  q.className="q";
+  q.contentEditable="plaintext-only";
+  if(q.contentEditable!=="plaintext-only")q.contentEditable="true";
+  q.textContent=it.qte;
+  var before=String(it.qte);
+  q.addEventListener("focus",function(){before=q.innerText.trim();});
+  q.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();q.blur();}});
+  q.addEventListener("blur",function(){
+    var v=q.innerText.trim();
+    if(v===before)return;
+    var n=parseNum(v);
+    if(n==null||n<0){q.textContent=it.qte;return;}
+    n=Math.round(n);
+    var old=it.qte;
+    it.qte=n;
+    renderStock();
+    setStockStatus("Enregistrement...");
+    api("PATCH","/stock/"+it.id,{qte:n}).then(function(d){
+      it.qte=d.item.qte;
+      renderStock();
+      setStockStatus("Enregistré");
+    }).catch(function(e){
+      it.qte=old;
+      renderStock();
+      setStockStatus("Erreur : "+e.message,true);
+    });
+  });
+  var p=document.createElement("button");
+  p.type="button";
+  p.textContent="+";
+  p.setAttribute("aria-label","Ajouter : "+it.taille+" "+it.couleur);
+  p.addEventListener("click",function(){moveStock(it,1);});
+  wrap.appendChild(m);wrap.appendChild(q);wrap.appendChild(p);
+  return wrap;
+}
+
+function moveStock(it,delta){
+  if(it.qte+delta<0)return;
+  it.qte+=delta;
+  pending[it.id]=(pending[it.id]||0)+1;
+  renderStock();
+  setStockStatus("Enregistrement...");
+  api("POST","/stock/"+it.id+"/move",{delta:delta}).then(function(d){
+    pending[it.id]--;
+    if(!pending[it.id])it.qte=d.item.qte;
+    renderStock();
+    setStockStatus("Enregistré");
+  }).catch(function(e){
+    pending[it.id]--;
+    it.qte-=delta;
+    if(it.qte<0)it.qte=0;
+    renderStock();
+    setStockStatus("Erreur : "+e.message,true);
+  });
+}
+
+function delBtn(kind,value){
+  var b=document.createElement("button");
+  b.type="button";
+  b.className="xb xcol";
+  b.textContent="\u00d7";
+  b.setAttribute("aria-label","Supprimer "+(kind==="taille"?"la taille ":"la couleur ")+value);
+  b.addEventListener("click",function(){removeGroup(kind,value);});
+  return b;
+}
+
+function removeGroup(kind,value){
+  var items=stock.filter(function(it){return it[kind]===value;});
+  if(!items.length)return;
+  var total=items.reduce(function(a,it){return a+(it.qte||0);},0);
+  var label=kind==="taille"?"la taille ":"la couleur ";
+  var msg="Supprimer "+label+value+" ?\n"+items.length+" lignes de stock seront retirées";
+  if(total>0)msg+=" (il reste "+total+" pièces en stock)";
+  msg+=".";
+  if(!confirm(msg))return;
+  setStockStatus("Suppression...");
+  var chain=Promise.resolve();
+  items.forEach(function(it){
+    chain=chain.then(function(){return api("DELETE","/stock/"+it.id);});
+  });
+  chain.then(function(){return loadStock(false);}).catch(function(e){
+    setStockStatus("Erreur : "+e.message,true);
+    loadStock(true);
+  });
+}
+
+function cleanName(v,upper){
+  v=(v||"").trim().replace(/\s+/g," ");
+  if(!v)return "";
+  return upper?v.toUpperCase():v.charAt(0).toUpperCase()+v.slice(1).toLowerCase();
+}
+
+function distinct(key){
+  var out=[];
+  stock.forEach(function(it){if(out.indexOf(it[key])<0)out.push(it[key]);});
+  return out;
+}
+
+$("addColor").addEventListener("click",function(){
+  var name=cleanName(prompt("Nom de la nouvelle couleur ?"),false);
+  if(!name)return;
+  var colors=distinct("couleur");
+  if(colors.some(function(c){return c.toLowerCase()===name.toLowerCase();})){
+    setStockStatus("Cette couleur existe déjà",true);
+    return;
+  }
+  var sizes=distinct("taille");
+  if(!sizes.length)sizes=SIZES.slice();
+  setStockStatus("Ajout de la couleur...");
+  var chain=Promise.resolve();
+  sizes.forEach(function(sz){
+    chain=chain.then(function(){return api("POST","/stock",{taille:sz,couleur:name,qte:0});});
+  });
+  chain.then(function(){return loadStock(false);}).catch(function(e){
+    setStockStatus("Erreur : "+e.message,true);
+    loadStock(true);
+  });
+});
+
+$("addSize").addEventListener("click",function(){
+  var name=cleanName(prompt("Nom de la nouvelle taille ? (par exemple 38A)"),true);
+  if(!name)return;
+  var sizes=distinct("taille");
+  if(sizes.some(function(z){return z.toUpperCase()===name;})){
+    setStockStatus("Cette taille existe déjà",true);
+    return;
+  }
+  var colors=distinct("couleur");
+  if(!colors.length){
+    setStockStatus("Ajoute d'abord une couleur",true);
+    return;
+  }
+  setStockStatus("Ajout de la taille...");
+  var chain=Promise.resolve();
+  colors.forEach(function(c){
+    chain=chain.then(function(){return api("POST","/stock",{taille:name,couleur:c,qte:0});});
+  });
+  chain.then(function(){return loadStock(false);}).catch(function(e){
+    setStockStatus("Erreur : "+e.message,true);
+    loadStock(true);
+  });
+});
+
+$("tabs").addEventListener("click",function(e){
+  var b=e.target.closest("button");
+  if(!b)return;
+  view=b.getAttribute("data-v");
+  Array.prototype.forEach.call($("tabs").children,function(x){x.className=x===b?"on":"";});
+  $("viewOrders").hidden=view!=="orders";
+  $("viewStock").hidden=view!=="stock";
+  if(view==="stock")loadStock(false);
+});
 
 if(code){
   load(false).then(function(){if($("app").hidden)showApp(false);});
