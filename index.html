@@ -75,6 +75,15 @@ button.go:hover{background:#34503c}
 .stt th,.stt td{text-align:center;white-space:nowrap}
 .stt th:first-child,.stt td:first-child{text-align:left}
 .stt .tt{color:var(--muted)}
+select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
+.crow{display:flex;gap:14px;flex-wrap:wrap}
+.crow label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.crow select{min-width:130px}
+.ref{width:100%;border-collapse:collapse;margin-bottom:6px}
+.ref th,.ref td{padding:7px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
+.ref tr:last-child td{border-bottom:none}
+.note{color:var(--muted);font-size:12px;margin:10px 2px 0}
+.mc.hl{background:var(--sage-soft);border-color:var(--sage)}
 </style>
 </head>
 <body>
@@ -102,6 +111,7 @@ button.go:hover{background:#34503c}
   <div class="seg tabs tools" id="tabs">
     <button data-v="orders" class="on">Commandes</button>
     <button data-v="stock">Stock</button>
+    <button data-v="sizes">Tailles</button>
   </div>
 
   <div id="viewOrders">
@@ -157,6 +167,44 @@ button.go:hover{background:#34503c}
       <button class="b" id="addColor">+ Ajouter une couleur</button>
       <span class="st" id="stS"></span>
     </div>
+  </div>
+
+  <div id="viewSizes" hidden>
+    <div class="box" style="padding:14px">
+      <div class="crow">
+        <label>Système
+          <select id="cSys">
+            <option value="fr">Français</option>
+            <option value="eu">Européen</option>
+            <option value="uk">UK / US</option>
+          </select>
+        </label>
+        <label>Tour de poitrine
+          <select id="cBand"></select>
+        </label>
+        <label>Bonnet
+          <select id="cCup"></select>
+        </label>
+      </div>
+    </div>
+    <div class="cards" id="cRes" style="margin-top:12px"></div>
+    <div class="bar tools">
+      <button class="b go" id="cAdd"></button>
+      <span class="st" id="tS"></span>
+    </div>
+    <div class="box">
+      <table class="ref">
+        <thead><tr><th>Français</th><th>Européen</th><th>UK / US</th></tr></thead>
+        <tbody id="rBands"></tbody>
+      </table>
+    </div>
+    <div class="box" style="margin-top:10px">
+      <table class="ref">
+        <thead><tr><th>Bonnet français / européen</th><th>Bonnet UK / US</th></tr></thead>
+        <tbody id="rCups"></tbody>
+      </table>
+    </div>
+    <p class="note">Les lettres S, M, L, XL... n'ont pas d'équivalent exact : elles dépendent du tableau de ton fournisseur.</p>
   </div>
 
   <div class="bar" id="capBack" hidden>
@@ -406,7 +454,7 @@ $("loginBtn").addEventListener("click",function(){
 });
 $("code").addEventListener("keydown",function(e){if(e.key==="Enter")$("loginBtn").click();});
 $("logout").addEventListener("click",function(){logout("");});
-$("refresh").addEventListener("click",function(){if(view==="stock")loadStock(false);else load(false);});
+$("refresh").addEventListener("click",function(){if(view==="stock")loadStock(false);else if(view==="orders")load(false);});
 
 $("seg").addEventListener("click",function(e){
   var b=e.target.closest("button");
@@ -444,7 +492,7 @@ setInterval(function(){
   if($("app").hidden)return;
   var a=document.activeElement;
   if(a&&(a.isContentEditable||a.tagName==="INPUT"))return;
-  if(view==="stock")loadStock(true);else load(true);
+  if(view==="stock")loadStock(true);else if(view==="orders")load(true);
 },60000);
 
 function setStockStatus(t,err){
@@ -682,8 +730,116 @@ $("tabs").addEventListener("click",function(e){
   Array.prototype.forEach.call($("tabs").children,function(x){x.className=x===b?"on":"";});
   $("viewOrders").hidden=view!=="orders";
   $("viewStock").hidden=view!=="stock";
+  $("viewSizes").hidden=view!=="sizes";
   if(view==="stock")loadStock(false);
 });
+
+var BANDS=[[80,65,30],[85,70,32],[90,75,34],[95,80,36],[100,85,38],[105,90,40],[110,95,42],[115,100,44],[120,105,46]];
+var CUPS=[["A","A"],["B","B"],["C","C"],["D","D"],["E","DD"],["F","E"],["G","F"],["H","FF"],["I","G"]];
+var SYS={fr:{name:"Français",bi:0,ci:0},eu:{name:"Européen",bi:1,ci:0},uk:{name:"UK / US",bi:2,ci:1}};
+var bandIdx=3,cupIdx=5;
+
+function fillSelect(sel,values,idx){
+  sel.innerHTML="";
+  values.forEach(function(v,i){
+    var o=document.createElement("option");
+    o.value=i;
+    o.textContent=v;
+    sel.appendChild(o);
+  });
+  sel.value=idx;
+}
+
+function sizeText(sysKey,bi,ci){
+  var sy=SYS[sysKey];
+  return BANDS[bi][sy.bi]+CUPS[ci][sy.ci];
+}
+
+function renderConverter(){
+  var key=$("cSys").value;
+  var sy=SYS[key];
+  fillSelect($("cBand"),BANDS.map(function(b){return b[sy.bi];}),bandIdx);
+  fillSelect($("cCup"),CUPS.map(function(c){return c[sy.ci];}),cupIdx);
+  var res=$("cRes");
+  res.innerHTML="";
+  Object.keys(SYS).forEach(function(k){
+    var d=document.createElement("div");
+    d.className="mc"+(k===key?" hl":"");
+    var l=document.createElement("div");
+    l.className="l";
+    l.textContent=SYS[k].name;
+    var v=document.createElement("div");
+    v.className="v";
+    v.textContent=sizeText(k,bandIdx,cupIdx);
+    d.appendChild(l);
+    d.appendChild(v);
+    res.appendChild(d);
+  });
+  $("cAdd").textContent="Ajouter "+sizeText("fr",bandIdx,cupIdx)+" au stock";
+}
+
+function renderRefs(){
+  var rb=$("rBands");
+  BANDS.forEach(function(b){
+    var tr=document.createElement("tr");
+    b.forEach(function(v){
+      var td=document.createElement("td");
+      td.textContent=v;
+      tr.appendChild(td);
+    });
+    rb.appendChild(tr);
+  });
+  var rc=$("rCups");
+  CUPS.forEach(function(c){
+    var tr=document.createElement("tr");
+    c.forEach(function(v){
+      var td=document.createElement("td");
+      td.textContent=v;
+      tr.appendChild(td);
+    });
+    rc.appendChild(tr);
+  });
+}
+
+$("cSys").addEventListener("change",renderConverter);
+$("cBand").addEventListener("change",function(){bandIdx=Number($("cBand").value);renderConverter();});
+$("cCup").addEventListener("change",function(){cupIdx=Number($("cCup").value);renderConverter();});
+
+function setSizesStatus(t,err){
+  var e=$("tS");
+  e.textContent=t;
+  e.className="st"+(err?" err":"");
+}
+
+$("cAdd").addEventListener("click",function(){
+  var name=sizeText("fr",bandIdx,cupIdx);
+  setSizesStatus("Vérification du stock...");
+  loadStock(true).then(function(){
+    var sizes=distinct("taille");
+    if(sizes.some(function(z){return z.toUpperCase()===name;})){
+      setSizesStatus(name+" existe déjà dans le stock",true);
+      return;
+    }
+    var colors=distinct("couleur");
+    if(!colors.length){
+      setSizesStatus("Ajoute d'abord une couleur dans l'onglet Stock",true);
+      return;
+    }
+    setSizesStatus("Ajout de "+name+"...");
+    var chain=Promise.resolve();
+    colors.forEach(function(c){
+      chain=chain.then(function(){return api("POST","/stock",{taille:name,couleur:c,qte:0});});
+    });
+    return chain.then(function(){return loadStock(true);}).then(function(){
+      setSizesStatus(name+" ajoutée au stock");
+    });
+  }).catch(function(e){
+    setSizesStatus("Erreur : "+e.message,true);
+  });
+});
+
+renderConverter();
+renderRefs();
 
 if(code){
   load(false).then(function(){if($("app").hidden)showApp(false);});
