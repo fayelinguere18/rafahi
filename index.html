@@ -84,6 +84,17 @@ select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:
 .ref tr:last-child td{border-bottom:none}
 .note{color:var(--muted);font-size:12px;margin:10px 2px 0}
 .mc.hl{background:var(--sage-soft);border-color:var(--sage)}
+.pf{padding:14px}
+.pf .crow{margin-bottom:12px;align-items:flex-end}
+.pf input[type=text],.pf input[type=tel],.pf input[type=number]{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);min-width:150px}
+.pf input[type=number]{min-width:80px;width:80px}
+.pf .lb{font-size:12px;color:var(--muted);margin:0 0 4px}
+.chipset{display:flex;gap:6px;flex-wrap:wrap}
+.chipset button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;font:inherit;color:var(--ink);cursor:pointer}
+.chipset button.on{background:var(--sage-soft);border-color:var(--sage);color:var(--sage-dark);font-weight:600}
+.pt{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;background:var(--sage-soft);color:var(--sage-dark);margin:0 4px 2px 0}
+.pt.g{background:var(--bl-bg);color:var(--bl-tx)}.pt.d{background:var(--ok-bg);color:var(--ok-tx)}.pt.b{background:var(--wa-bg);color:var(--wa-tx)}
+.perr{color:var(--no-tx);font-size:13px;min-height:18px;margin:8px 0 0}
 </style>
 </head>
 <body>
@@ -112,6 +123,7 @@ select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:
     <button data-v="orders" class="on">Commandes</button>
     <button data-v="stock">Stock</button>
     <button data-v="sizes">Tailles</button>
+    <button data-v="pre">Précommandes</button>
   </div>
 
   <div id="viewOrders">
@@ -205,6 +217,43 @@ select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:
       </table>
     </div>
     <p class="note">Les lettres S, M, L, XL... n'ont pas d'équivalent exact : elles dépendent du tableau de ton fournisseur.</p>
+  </div>
+
+  <div id="viewPre" hidden>
+    <div class="cards">
+      <div class="mc"><div class="l">Précommandes</div><div class="v" id="pA">0</div></div>
+      <div class="mc"><div class="l">Pièces au total</div><div class="v" id="pB">0</div></div>
+      <div class="mc"><div class="l">Protège G / D / 2</div><div class="v" id="pC">0 / 0 / 0</div></div>
+    </div>
+    <p class="note" style="margin:0 2px 8px">Soutiens mastectomie · du 28 octobre au 13 novembre</p>
+    <div class="box">
+      <table class="stt">
+        <thead id="pHead"></thead>
+        <tbody id="pTot"></tbody>
+      </table>
+    </div>
+    <div class="box pf tools" style="margin-top:12px">
+      <div class="crow">
+        <div><div class="lb">Nom et prénom</div><input type="text" id="pNom" placeholder="Awa Diop" autocomplete="off"></div>
+        <div><div class="lb">Téléphone</div><input type="tel" id="pTel" placeholder="77 000 00 00"></div>
+        <div><div class="lb">Taille</div><select id="pTaille"></select></div>
+        <div><div class="lb">Pièces</div><input type="number" id="pNb" min="1" value="1"></div>
+      </div>
+      <div class="lb">Couleurs</div>
+      <div class="chipset" id="pCol" style="margin-bottom:12px"></div>
+      <div class="lb">Protège à commander</div>
+      <div class="chipset" id="pProt"></div>
+      <p class="perr" id="pErr"></p>
+      <button class="b go" id="pAdd">+ Ajouter la précommande</button>
+    </div>
+    <div class="box" style="margin-top:12px">
+      <table>
+        <thead><tr><th>Nom</th><th>Téléphone</th><th>Taille</th><th class="n">Pièces</th><th>Couleurs</th><th>Protège</th><th class="xcol"></th></tr></thead>
+        <tbody id="pBody"></tbody>
+      </table>
+      <div class="empty" id="pEmpty" hidden>Aucune précommande pour l'instant.</div>
+    </div>
+    <p class="note">Les précommandes sont enregistrées sur cet appareil (navigateur), pas sur le serveur.</p>
   </div>
 
   <div class="bar" id="capBack" hidden>
@@ -731,8 +780,113 @@ $("tabs").addEventListener("click",function(e){
   $("viewOrders").hidden=view!=="orders";
   $("viewStock").hidden=view!=="stock";
   $("viewSizes").hidden=view!=="sizes";
+  $("viewPre").hidden=view!=="pre";
   if(view==="stock")loadStock(false);
+  if(view==="pre")renderPre();
 });
+
+var PRE_SIZES=["S","M","L","XL","2XL","3XL","4XL"];
+var PRE_COLORS=["Beige","Noir","Léopard","Marron","Rose"];
+var PRE_PROT=["Gauche","Droit","Les deux"];
+var PRE_KEY="rafahi_precommandes";
+var pre=[];
+try{pre=JSON.parse(store("get",PRE_KEY)||"[]");if(!Array.isArray(pre))pre=[];}catch(e){pre=[];}
+var preSel={couleurs:[],protege:""};
+
+function preSave(){store("set",PRE_KEY,JSON.stringify(pre));}
+function mk(tag,text,cls){
+  var e=document.createElement(tag);
+  if(text!=null)e.textContent=text;
+  if(cls)e.className=cls;
+  return e;
+}
+function preChips(box,list,multi){
+  box.innerHTML="";
+  list.forEach(function(v){
+    var b=mk("button",v);
+    b.type="button";
+    var on=multi?preSel.couleurs.indexOf(v)>-1:preSel.protege===v;
+    b.className=on?"on":"";
+    b.addEventListener("click",function(){
+      if(multi){
+        var i=preSel.couleurs.indexOf(v);
+        if(i>-1)preSel.couleurs.splice(i,1);else preSel.couleurs.push(v);
+      }else{
+        preSel.protege=preSel.protege===v?"":v;
+      }
+      preChips(box,list,multi);
+    });
+    box.appendChild(b);
+  });
+}
+function renderPre(){
+  var tot={},all=0,g=0,d=0,t=0;
+  PRE_SIZES.forEach(function(z){tot[z]=0;});
+  pre.forEach(function(p){
+    tot[p.taille]=(tot[p.taille]||0)+p.nb;
+    all+=p.nb;
+    if(p.protege==="Gauche")g++;else if(p.protege==="Droit")d++;else if(p.protege==="Les deux")t++;
+  });
+  $("pA").textContent=pre.length;
+  $("pB").textContent=all;
+  $("pC").textContent=g+" / "+d+" / "+t;
+  var head=$("pHead");head.innerHTML="";
+  var hr=mk("tr");hr.appendChild(mk("th","Taille"));
+  PRE_SIZES.forEach(function(z){hr.appendChild(mk("th",z));});
+  hr.appendChild(mk("th","Total"));head.appendChild(hr);
+  var tb=$("pTot");tb.innerHTML="";
+  var tr=mk("tr");tr.appendChild(mk("td","Pièces"));
+  PRE_SIZES.forEach(function(z){
+    var td=mk("td",tot[z]);
+    if(!tot[z])td.className="tt";
+    tr.appendChild(td);
+  });
+  var tt=mk("td",all);tt.style.fontWeight="600";tr.appendChild(tt);tb.appendChild(tr);
+  var body=$("pBody");body.innerHTML="";
+  $("pEmpty").hidden=pre.length>0;
+  pre.forEach(function(p,i){
+    var r=mk("tr");
+    r.appendChild(mk("td",p.nom));
+    r.appendChild(mk("td",p.tel||""));
+    r.appendChild(mk("td",p.taille));
+    var n=mk("td",p.nb);n.className="n";r.appendChild(n);
+    var c=mk("td");
+    p.couleurs.forEach(function(x){c.appendChild(mk("span",x,"pt"));});
+    r.appendChild(c);
+    var pr=mk("td");
+    pr.appendChild(mk("span",p.protege,"pt "+(p.protege==="Gauche"?"g":p.protege==="Droit"?"d":"b")));
+    r.appendChild(pr);
+    var x=mk("td");x.className="xcol";
+    var xb=mk("button","×","xb");xb.type="button";xb.setAttribute("aria-label","Supprimer "+p.nom);
+    xb.addEventListener("click",function(){
+      if(confirm("Supprimer la précommande de "+p.nom+" ?")){pre.splice(i,1);preSave();renderPre();}
+    });
+    x.appendChild(xb);r.appendChild(x);
+    body.appendChild(r);
+  });
+}
+(function(){
+  var sel=$("pTaille");
+  PRE_SIZES.forEach(function(z){var o=mk("option",z);o.value=z;sel.appendChild(o);});
+  preChips($("pCol"),PRE_COLORS,true);
+  preChips($("pProt"),PRE_PROT,false);
+  $("pAdd").addEventListener("click",function(){
+    var nom=$("pNom").value.trim(),nb=parseInt($("pNb").value,10),e=$("pErr");
+    if(!nom){e.textContent="Entre le nom et le prénom de la cliente.";return;}
+    if(!nb||nb<1){e.textContent="Entre un nombre de pièces (1 ou plus).";return;}
+    if(!preSel.couleurs.length){e.textContent="Choisis au moins une couleur.";return;}
+    if(!preSel.protege){e.textContent="Choisis le protège : gauche, droit ou les deux.";return;}
+    e.textContent="";
+    pre.push({nom:nom,tel:$("pTel").value.trim(),taille:$("pTaille").value,nb:nb,couleurs:preSel.couleurs.slice(),protege:preSel.protege});
+    preSave();
+    $("pNom").value="";$("pTel").value="";$("pNb").value="1";
+    preSel={couleurs:[],protege:""};
+    preChips($("pCol"),PRE_COLORS,true);
+    preChips($("pProt"),PRE_PROT,false);
+    renderPre();
+  });
+  $("pNom").addEventListener("input",function(){$("pErr").textContent="";});
+})();
 
 var BANDS=[[80,65,30],[85,70,32],[90,75,34],[95,80,36],[100,85,38],[105,90,40],[110,95,42],[115,100,44],[120,105,46]];
 var CUPS=[["A","A"],["B","B"],["C","C"],["D","D"],["E","DD"],["F","E"],["G","F"],["H","FF"],["I","G"]];
