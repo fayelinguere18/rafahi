@@ -23,6 +23,7 @@ h1{font-size:20px;font-weight:600;margin:0}
 .sub{color:var(--muted);font-size:13px;margin-top:2px;text-transform:capitalize}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.cards.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .mc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 .mc .l{font-size:12px;color:var(--muted)}
 .mc .v{font-size:22px;font-weight:600;margin-top:2px}
@@ -37,6 +38,8 @@ tr:last-child td{border-bottom:none}
 .ed:empty:before{content:attr(data-ph);color:#c0b9a8}
 input[type=date]{border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:1px 3px;border-radius:5px;width:128px}
 input[type=date]:focus{outline:none;background:#f3ede0;border-color:var(--line)}
+select.sel{border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:2px 3px;border-radius:5px;cursor:pointer}
+select.sel:focus{outline:none;background:#f3ede0;border-color:var(--line)}
 .pill{border:none;border-radius:999px;padding:3px 11px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
 .rk{display:inline-block;min-width:34px;text-align:center;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;background:var(--ne-bg);color:var(--ne-tx)}
 .rk.first{background:var(--ok-bg);color:var(--ok-tx)}
@@ -66,6 +69,15 @@ button.go:hover{background:#34503c}
 .stt th,.stt td{text-align:center;white-space:nowrap}
 .stt th:first-child,.stt td:first-child{text-align:left}
 .stt .tt{color:var(--muted)}
+.mh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.mh h2{font-size:18px;font-weight:600;margin:0}
+.mh .per{color:var(--muted);font-size:13px;margin-top:2px}
+.sizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(52px,1fr));gap:6px;text-align:center;margin-top:8px}
+.sizes .z{color:var(--muted);font-size:12px}
+.sizes .c{font-size:20px;font-weight:600}
+.sizes .c.zero{color:#b3ab98}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
+.bd{border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600}
 #login{max-width:360px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px}
 #login h1{margin-bottom:4px}
 #login p{color:var(--muted);margin:0 0 16px}
@@ -107,37 +119,80 @@ button.go:hover{background:#34503c}
   </div>
 
   <div id="viewOrders">
-    <div class="cards">
-      <div class="mc"><div class="l">Clientes à livrer</div><div class="v" id="mA">0</div></div>
-      <div class="mc"><div class="l">Articles à livrer</div><div class="v" id="mB">0</div></div>
-      <div class="mc"><div class="l">À encaisser</div><div class="v" id="mC">0</div></div>
-    </div>
 
-    <div class="bar tools">
-      <div class="seg" id="seg">
-        <button data-f="tout" class="on">Tout</button>
-        <button data-f="jour">À livrer aujourd'hui</button>
-        <button data-f="impayees">Non payées</button>
+    <div id="viewNormal">
+      <div class="cards">
+        <div class="mc"><div class="l">Clientes à livrer</div><div class="v" id="mA">0</div></div>
+        <div class="mc"><div class="l">Articles à livrer</div><div class="v" id="mB">0</div></div>
+        <div class="mc"><div class="l">À encaisser</div><div class="v" id="mC">0</div></div>
       </div>
-      <span class="st" id="st"></span>
+
+      <div class="bar tools">
+        <div class="seg" id="seg">
+          <button data-f="tout" class="on">Tout</button>
+          <button data-f="jour">À livrer aujourd'hui</button>
+          <button data-f="impayees">Non payées</button>
+        </div>
+        <span class="st" id="st"></span>
+      </div>
+
+      <div class="box">
+        <table>
+          <thead>
+            <tr>
+              <th>Ordre</th><th>Commandée le</th><th>Cliente</th><th>Tailles (prix)</th><th>Couleurs</th><th class="n">Qté</th><th class="n">Total</th>
+              <th>Paiement</th><th>Livraison</th><th>Adresse</th><th>Livrer le</th><th>Téléphone</th><th class="xcol"></th>
+            </tr>
+          </thead>
+          <tbody id="body"></tbody>
+        </table>
+        <div class="empty" id="empty" hidden>Aucune commande à afficher.</div>
+      </div>
+
+      <div class="bar tools">
+        <button class="b go" id="add">+ Ajouter une cliente</button>
+        <button class="b" id="cap">Mode capture</button>
+      </div>
     </div>
 
-    <div class="box">
-      <table>
-        <thead>
-          <tr>
-            <th>Ordre</th><th>Commandée le</th><th>Cliente</th><th>Tailles (prix)</th><th>Couleurs</th><th class="n">Qté</th><th class="n">Total</th>
-            <th>Paiement</th><th>Livraison</th><th>Adresse</th><th>Livrer le</th><th>Téléphone</th><th class="xcol"></th>
-          </tr>
-        </thead>
-        <tbody id="body"></tbody>
-      </table>
-      <div class="empty" id="empty" hidden>Aucune commande à afficher.</div>
-    </div>
+    <div id="viewMast" hidden>
+      <div class="mh">
+        <div>
+          <h2>Précommandes soutiens mastectomie</h2>
+          <div class="per" id="mPer"></div>
+        </div>
+        <span class="pill" id="mState" style="cursor:default"></span>
+      </div>
 
-    <div class="bar tools">
-      <button class="b go" id="add">+ Ajouter une cliente</button>
-      <button class="b" id="cap">Mode capture</button>
+      <div class="cards c2">
+        <div class="mc"><div class="l">Précommandes</div><div class="v" id="pA">0</div></div>
+        <div class="mc"><div class="l">Pièces au total</div><div class="v" id="pB">0</div></div>
+      </div>
+
+      <div class="mc">
+        <div class="l">Total de pièces par taille</div>
+        <div class="sizes" id="pSizes"></div>
+      </div>
+
+      <div class="badges" id="pBad"></div>
+
+      <div class="box">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th><th>Téléphone</th><th>Taille</th><th class="n">Pièces</th><th>Couleurs</th><th>Protège</th><th class="xcol"></th>
+            </tr>
+          </thead>
+          <tbody id="mBody"></tbody>
+        </table>
+        <div class="empty" id="mEmpty" hidden>Aucune précommande pour le moment.</div>
+      </div>
+
+      <div class="bar tools">
+        <button class="b go" id="addM">+ Ajouter une précommande</button>
+        <button class="b" id="capM">Mode capture</button>
+        <span class="st" id="stM"></span>
+      </div>
     </div>
   </div>
 
@@ -169,15 +224,23 @@ button.go:hover{background:#34503c}
 <script>
 var API="https://rafahi-relais.fayelinguere18.workers.dev";
 var DEFAULT_TYPE="Softia";
+var MAST_TYPE="Mastectomie";
+/* Période des précommandes mastectomie (format AAAA-MM-JJ). À modifier ici si les dates changent. */
+var PRE_START="2026-10-28";
+var PRE_END="2026-11-13";
 var PAY=["Payé","Non payé"];
 var LIV=["À livrer","Livrée","Reportée"];
+var PROT=["Gauche","Droit","Les deux"];
 var SIZES=["S","M","L","XL","2XL","3XL","4XL"];
 var COL={
   "Payé":["var(--ok-bg)","var(--ok-tx)"],
   "Non payé":["var(--no-bg)","var(--no-tx)"],
   "À livrer":["var(--wa-bg)","var(--wa-tx)"],
   "Livrée":["var(--ne-bg)","var(--ne-tx)"],
-  "Reportée":["var(--bl-bg)","var(--bl-tx)"]
+  "Reportée":["var(--bl-bg)","var(--bl-tx)"],
+  "Gauche":["var(--bl-bg)","var(--bl-tx)"],
+  "Droit":["var(--ok-bg)","var(--ok-tx)"],
+  "Les deux":["var(--wa-bg)","var(--wa-tx)"]
 };
 
 function store(op,k,v){
@@ -212,14 +275,17 @@ function todayStr(){
 }
 function ordinal(n){return n===1?"1er":n+"e";}
 function typeOf(x){return x.type||DEFAULT_TYPE;}
+function isMast(){return curType===MAST_TYPE;}
 function cleanName(v){
   v=(v||"").trim().replace(/\s+/g," ");
   return v?v.charAt(0).toUpperCase()+v.slice(1):"";
 }
 function setStatus(t,err){
-  var s=$("st");
-  s.textContent=t;
-  s.className="st"+(err?" err":"");
+  ["st","stM"].forEach(function(id){
+    var s=$(id);
+    s.textContent=t;
+    s.className="st"+(err?" err":"");
+  });
 }
 function setStockStatus(t,err){
   var e=$("stS");
@@ -327,6 +393,7 @@ function visible(o){
 }
 
 function summary(){
+  if(isMast()){mastStats();return;}
   var art=0,enc=0,nb=0;
   ordersFor(curType).forEach(function(o){
     if(o.livraison==="À livrer"){nb++;art+=parseNum(o.qte)||0;}
@@ -410,6 +477,24 @@ function dateInput(o,key,after){
   return di;
 }
 
+function orderDelBtn(o){
+  var x=document.createElement("button");
+  x.type="button";
+  x.className="xb";
+  x.setAttribute("aria-label","Supprimer la ligne");
+  x.textContent="\u00d7";
+  x.addEventListener("click",function(){
+    if(!confirm("Supprimer cette ligne ?"))return;
+    setStatus("Suppression...");
+    api("DELETE","/orders/"+o.id).then(function(){
+      orders=orders.filter(function(z){return z.id!==o.id;});
+      renderOrders();
+      setStatus("Supprimé");
+    }).catch(function(e){setStatus("Erreur : "+e.message,true);});
+  });
+  return x;
+}
+
 function row(o,rank){
   var tr=document.createElement("tr");
   var rk=document.createElement("span");
@@ -432,26 +517,16 @@ function row(o,rank){
   cell(tr,ed(o,"adresse","Adresse"));
   cell(tr,dateInput(o,"date",false));
   cell(tr,ed(o,"telephone","Téléphone"));
-  var x=document.createElement("button");
-  x.type="button";
-  x.className="xb";
-  x.setAttribute("aria-label","Supprimer la ligne");
-  x.textContent="\u00d7";
-  x.addEventListener("click",function(){
-    if(!confirm("Supprimer cette ligne ?"))return;
-    setStatus("Suppression...");
-    api("DELETE","/orders/"+o.id).then(function(){
-      orders=orders.filter(function(z){return z.id!==o.id;});
-      renderOrders();
-      setStatus("Supprimé");
-    }).catch(function(e){setStatus("Erreur : "+e.message,true);});
-  });
-  var td=cell(tr,x);
+  var td=cell(tr,orderDelBtn(o));
   td.className="xcol";
   return tr;
 }
 
 function renderOrders(){
+  var m=isMast();
+  $("viewNormal").hidden=m;
+  $("viewMast").hidden=!m;
+  if(m){renderMast();return;}
   var body=$("body");
   body.innerHTML="";
   var all=ordersFor(curType);
@@ -463,6 +538,116 @@ function renderOrders(){
   summary();
 }
 
+/* ---------- Précommandes mastectomie ---------- */
+function mastFor(){
+  return orders.filter(function(o){return typeOf(o)===MAST_TYPE;}).sort(function(a,b){
+    var ca=a.cree||"",cb=b.cree||"";
+    return ca<cb?-1:ca>cb?1:0;
+  });
+}
+
+function dayLabel(s){
+  var d=new Date(s+"T00:00:00");
+  return d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
+}
+
+function mastHeader(){
+  $("mPer").textContent="Du "+dayLabel(PRE_START)+" au "+dayLabel(PRE_END);
+  var t=todayStr();
+  var s=$("mState");
+  var label="Ouvert",c=COL["Gauche"];
+  if(t<PRE_START){label="Bientôt";c=COL["Les deux"];}
+  else if(t>PRE_END){label="Fermé";c=COL["Livrée"];}
+  s.textContent=label;
+  s.style.background=c[0];
+  s.style.color=c[1];
+}
+
+function mastStats(){
+  var list=mastFor();
+  var nb=0,pieces=0,bySize={},byProt={"Gauche":0,"Droit":0,"Les deux":0};
+  list.forEach(function(o){
+    if((o.cliente||"").trim())nb++;
+    var q=parseNum(o.qte)||0;
+    pieces+=q;
+    var sz=(o.tailles||"").trim().toUpperCase();
+    if(sz)bySize[sz]=(bySize[sz]||0)+q;
+    if(byProt.hasOwnProperty(o.protege))byProt[o.protege]++;
+  });
+  $("pA").textContent=nb;
+  $("pB").textContent=pieces;
+
+  var sizes=SIZES.slice();
+  Object.keys(bySize).forEach(function(z){if(sizes.indexOf(z)<0)sizes.push(z);});
+  var box=$("pSizes");
+  box.innerHTML="";
+  sizes.forEach(function(z){
+    var d=document.createElement("div");
+    var l=document.createElement("div");
+    l.className="z";
+    l.textContent=z;
+    var v=document.createElement("div");
+    var n=bySize[z]||0;
+    v.className="c"+(n?"":" zero");
+    v.textContent=n;
+    d.appendChild(l);d.appendChild(v);
+    box.appendChild(d);
+  });
+
+  var bad=$("pBad");
+  bad.innerHTML="";
+  PROT.forEach(function(p){
+    var s=document.createElement("span");
+    s.className="bd";
+    s.style.background=COL[p][0];
+    s.style.color=COL[p][1];
+    s.textContent=p+" : "+byProt[p];
+    bad.appendChild(s);
+  });
+}
+
+function sizeSelect(o){
+  var s=document.createElement("select");
+  s.className="sel";
+  s.setAttribute("aria-label","Taille");
+  var list=[""].concat(SIZES);
+  var cur=(o.tailles||"").trim();
+  if(cur&&list.indexOf(cur)<0)list.push(cur);
+  list.forEach(function(z){
+    var op=document.createElement("option");
+    op.value=z;
+    op.textContent=z||"Choisir";
+    s.appendChild(op);
+  });
+  s.value=cur;
+  s.addEventListener("change",function(){save(o,{tailles:s.value});});
+  return s;
+}
+
+function mrow(o){
+  var tr=document.createElement("tr");
+  cell(tr,ed(o,"cliente","Nom",{bold:true}));
+  cell(tr,ed(o,"telephone","Téléphone"));
+  cell(tr,sizeSelect(o));
+  cell(tr,ed(o,"qte","0",{num:true}),"n");
+  cell(tr,ed(o,"couleurs","Beige, noir"));
+  cell(tr,pill(o,"protege",PROT,true));
+  var td=cell(tr,orderDelBtn(o));
+  td.className="xcol";
+  return tr;
+}
+
+function renderMast(){
+  mastHeader();
+  var body=$("mBody");
+  body.innerHTML="";
+  var list=mastFor();
+  list.forEach(function(o){body.appendChild(mrow(o));});
+  $("mEmpty").hidden=list.length>0;
+  mastStats();
+}
+
+/* ---------- Stock ---------- */
 function sizeCmp(a,b){
   var ia=SIZES.indexOf(a),ib=SIZES.indexOf(b);
   if(ia>=0||ib>=0){
@@ -779,11 +964,26 @@ $("add").addEventListener("click",function(){
   }).catch(function(e){setStatus("Erreur : "+e.message,true);});
 });
 
+$("addM").addEventListener("click",function(){
+  setStatus("Ajout...");
+  api("POST","/orders",{cliente:"",type:MAST_TYPE,dateCommande:todayStr()}).then(function(d){
+    orders.push(d.order);
+    renderOrders();
+    setStatus("Ligne ajoutée");
+    var rows=$("mBody").children;
+    if(rows.length){
+      var first=rows[rows.length-1].querySelector(".ed");
+      if(first)first.focus();
+    }
+  }).catch(function(e){setStatus("Erreur : "+e.message,true);});
+});
+
 function setCapture(on){
   $("app").className=on?"wrap cap":"wrap";
   $("capBack").hidden=!on;
 }
 $("cap").addEventListener("click",function(){setCapture(true);});
+$("capM").addEventListener("click",function(){setCapture(true);});
 $("capOff").addEventListener("click",function(){setCapture(false);});
 
 $("tabs").addEventListener("click",function(e){
@@ -801,7 +1001,7 @@ $("today").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day
 setInterval(function(){
   if($("app").hidden)return;
   var a=document.activeElement;
-  if(a&&(a.isContentEditable||a.tagName==="INPUT"))return;
+  if(a&&(a.isContentEditable||a.tagName==="INPUT"||a.tagName==="SELECT"))return;
   if(view==="stock")loadStock(true);else load(true);
 },60000);
 
