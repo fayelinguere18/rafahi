@@ -7,14 +7,8 @@
 <title>Rafahi Boutique - Commandes</title>
 <style>
 :root{
-  --bg:#f6f1e7;
-  --card:#fffdf8;
-  --line:#e7dfcf;
-  --ink:#2b2a26;
-  --muted:#8b8577;
-  --sage:#7f9a82;
-  --sage-dark:#3f5c47;
-  --sage-soft:#e1ebe1;
+  --bg:#f6f1e7;--card:#fffdf8;--line:#e7dfcf;--ink:#2b2a26;--muted:#8b8577;
+  --sage:#7f9a82;--sage-dark:#3f5c47;--sage-soft:#e1ebe1;
   --ok-bg:#d6ead6;--ok-tx:#2f6b3a;
   --no-bg:#f4d9d2;--no-tx:#8a3a2c;
   --wa-bg:#f7e4b8;--wa-tx:#7a5a12;
@@ -24,7 +18,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.45}
-.wrap{max-width:1180px;margin:0 auto;padding:18px 14px 40px}
+.wrap{max-width:1280px;margin:0 auto;padding:18px 14px 40px}
 h1{font-size:20px;font-weight:600;margin:0}
 .sub{color:var(--muted);font-size:13px;margin-top:2px;text-transform:capitalize}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
@@ -44,6 +38,8 @@ tr:last-child td{border-bottom:none}
 input[type=date]{border:1px solid transparent;background:transparent;font:inherit;color:inherit;padding:1px 3px;border-radius:5px;width:128px}
 input[type=date]:focus{outline:none;background:#f3ede0;border-color:var(--line)}
 .pill{border:none;border-radius:999px;padding:3px 11px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.rk{display:inline-block;min-width:34px;text-align:center;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;background:var(--ne-bg);color:var(--ne-tx)}
+.rk.first{background:var(--ok-bg);color:var(--ok-tx)}
 .xb{border:none;background:transparent;color:#b3ab98;cursor:pointer;font-size:18px;line-height:1;padding:0 4px}
 .xb:hover{color:var(--no-tx)}
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
@@ -51,20 +47,15 @@ button.b{background:var(--card);border:1px solid var(--line);border-radius:9px;p
 button.b:hover{background:#f3ede0}
 button.go{background:var(--sage-dark);border-color:var(--sage-dark);color:#fff}
 button.go:hover{background:#34503c}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
 .seg button{border:none;background:transparent;padding:7px 14px;font:inherit;cursor:pointer;color:var(--muted)}
 .seg button.on{background:var(--sage-soft);color:var(--sage-dark);font-weight:600}
+.tabs{margin:0 0 12px}
+.typebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
 .st{font-size:12px;color:var(--muted);margin-left:auto}
 .st.err{color:var(--no-tx)}
 .cap .xcol,.cap .tools{display:none}
 .empty{padding:26px;text-align:center;color:var(--muted)}
-#login{max-width:360px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px}
-#login h1{margin-bottom:4px}
-#login p{color:var(--muted);margin:0 0 16px}
-#login input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;margin-bottom:10px}
-#login .e{color:var(--no-tx);min-height:20px;font-size:13px;margin-bottom:6px}
-@media (max-width:640px){.cards{grid-template-columns:1fr 1fr 1fr}.mc .v{font-size:18px}}
-.tabs{margin:0 0 14px}
 .sc{display:inline-flex;align-items:center;gap:4px;padding:2px 4px;border-radius:999px}
 .sc button{width:26px;height:26px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px;line-height:1;cursor:pointer}
 .sc button:disabled{opacity:.35;cursor:default}
@@ -75,26 +66,12 @@ button.go:hover{background:#34503c}
 .stt th,.stt td{text-align:center;white-space:nowrap}
 .stt th:first-child,.stt td:first-child{text-align:left}
 .stt .tt{color:var(--muted)}
-select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink)}
-.crow{display:flex;gap:14px;flex-wrap:wrap}
-.crow label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
-.crow select{min-width:130px}
-.ref{width:100%;border-collapse:collapse;margin-bottom:6px}
-.ref th,.ref td{padding:7px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}
-.ref tr:last-child td{border-bottom:none}
-.note{color:var(--muted);font-size:12px;margin:10px 2px 0}
-.mc.hl{background:var(--sage-soft);border-color:var(--sage)}
-.pf{padding:14px}
-.pf .crow{margin-bottom:12px;align-items:flex-end}
-.pf input[type=text],.pf input[type=tel],.pf input[type=number]{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);min-width:150px}
-.pf input[type=number]{min-width:80px;width:80px}
-.pf .lb{font-size:12px;color:var(--muted);margin:0 0 4px}
-.chipset{display:flex;gap:6px;flex-wrap:wrap}
-.chipset button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;font:inherit;color:var(--ink);cursor:pointer}
-.chipset button.on{background:var(--sage-soft);border-color:var(--sage);color:var(--sage-dark);font-weight:600}
-.pt{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;background:var(--sage-soft);color:var(--sage-dark);margin:0 4px 2px 0}
-.pt.g{background:var(--bl-bg);color:var(--bl-tx)}.pt.d{background:var(--ok-bg);color:var(--ok-tx)}.pt.b{background:var(--wa-bg);color:var(--wa-tx)}
-.perr{color:var(--no-tx);font-size:13px;min-height:18px;margin:8px 0 0}
+#login{max-width:360px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px}
+#login h1{margin-bottom:4px}
+#login p{color:var(--muted);margin:0 0 16px}
+#login input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;margin-bottom:10px}
+#login .e{color:var(--no-tx);min-height:20px;font-size:13px;margin-bottom:6px}
+@media (max-width:640px){.mc .v{font-size:18px}}
 </style>
 </head>
 <body>
@@ -122,43 +99,46 @@ select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:
   <div class="seg tabs tools" id="tabs">
     <button data-v="orders" class="on">Commandes</button>
     <button data-v="stock">Stock</button>
-    <button data-v="sizes">Tailles</button>
-    <button data-v="pre">Précommandes</button>
+  </div>
+
+  <div class="typebar">
+    <div class="seg" id="types"></div>
+    <button class="b tools" id="addType">+ Ajouter un type</button>
   </div>
 
   <div id="viewOrders">
-  <div class="cards">
-    <div class="mc"><div class="l">Clientes à livrer</div><div class="v" id="mA">0</div></div>
-    <div class="mc"><div class="l">Articles à livrer</div><div class="v" id="mB">0</div></div>
-    <div class="mc"><div class="l">À encaisser</div><div class="v" id="mC">0</div></div>
-  </div>
-
-  <div class="bar tools">
-    <div class="seg" id="seg">
-      <button data-f="tout" class="on">Tout</button>
-      <button data-f="jour">Aujourd'hui</button>
-      <button data-f="impayees">Non payées</button>
+    <div class="cards">
+      <div class="mc"><div class="l">Clientes à livrer</div><div class="v" id="mA">0</div></div>
+      <div class="mc"><div class="l">Articles à livrer</div><div class="v" id="mB">0</div></div>
+      <div class="mc"><div class="l">À encaisser</div><div class="v" id="mC">0</div></div>
     </div>
-    <span class="st" id="st"></span>
-  </div>
 
-  <div class="box" id="box">
-    <table>
-      <thead>
-        <tr>
-          <th>Cliente</th><th>Tailles (prix)</th><th>Couleurs</th><th class="n">Qté</th><th class="n">Total</th>
-          <th>Paiement</th><th>Livraison</th><th>Adresse</th><th>Date</th><th>Téléphone</th><th class="xcol"></th>
-        </tr>
-      </thead>
-      <tbody id="body"></tbody>
-    </table>
-    <div class="empty" id="empty" hidden>Aucune commande à afficher.</div>
-  </div>
+    <div class="bar tools">
+      <div class="seg" id="seg">
+        <button data-f="tout" class="on">Tout</button>
+        <button data-f="jour">À livrer aujourd'hui</button>
+        <button data-f="impayees">Non payées</button>
+      </div>
+      <span class="st" id="st"></span>
+    </div>
 
-  <div class="bar tools">
-    <button class="b go" id="add">+ Ajouter une cliente</button>
-    <button class="b" id="cap">Mode capture</button>
-  </div>
+    <div class="box">
+      <table>
+        <thead>
+          <tr>
+            <th>Ordre</th><th>Commandée le</th><th>Cliente</th><th>Tailles (prix)</th><th>Couleurs</th><th class="n">Qté</th><th class="n">Total</th>
+            <th>Paiement</th><th>Livraison</th><th>Adresse</th><th>Livrer le</th><th>Téléphone</th><th class="xcol"></th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden>Aucune commande à afficher.</div>
+    </div>
+
+    <div class="bar tools">
+      <button class="b go" id="add">+ Ajouter une cliente</button>
+      <button class="b" id="cap">Mode capture</button>
+    </div>
   </div>
 
   <div id="viewStock" hidden>
@@ -172,88 +152,13 @@ select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:
         <thead id="sHead"></thead>
         <tbody id="sBody"></tbody>
       </table>
-      <div class="empty" id="sEmpty" hidden>Aucun article en stock.</div>
+      <div class="empty" id="sEmpty" hidden>Aucun article en stock pour ce type.</div>
     </div>
     <div class="bar tools">
       <button class="b" id="addSize">+ Ajouter une taille</button>
       <button class="b" id="addColor">+ Ajouter une couleur</button>
       <span class="st" id="stS"></span>
     </div>
-  </div>
-
-  <div id="viewSizes" hidden>
-    <div class="box" style="padding:14px">
-      <div class="crow">
-        <label>Système
-          <select id="cSys">
-            <option value="fr">Français</option>
-            <option value="eu">Européen</option>
-            <option value="uk">UK / US</option>
-          </select>
-        </label>
-        <label>Tour de poitrine
-          <select id="cBand"></select>
-        </label>
-        <label>Bonnet
-          <select id="cCup"></select>
-        </label>
-      </div>
-    </div>
-    <div class="cards" id="cRes" style="margin-top:12px"></div>
-    <div class="bar tools">
-      <button class="b go" id="cAdd"></button>
-      <span class="st" id="tS"></span>
-    </div>
-    <div class="box">
-      <table class="ref">
-        <thead><tr><th>Français</th><th>Européen</th><th>UK / US</th></tr></thead>
-        <tbody id="rBands"></tbody>
-      </table>
-    </div>
-    <div class="box" style="margin-top:10px">
-      <table class="ref">
-        <thead><tr><th>Bonnet français / européen</th><th>Bonnet UK / US</th></tr></thead>
-        <tbody id="rCups"></tbody>
-      </table>
-    </div>
-    <p class="note">Les lettres S, M, L, XL... n'ont pas d'équivalent exact : elles dépendent du tableau de ton fournisseur.</p>
-  </div>
-
-  <div id="viewPre" hidden>
-    <div class="cards">
-      <div class="mc"><div class="l">Précommandes</div><div class="v" id="pA">0</div></div>
-      <div class="mc"><div class="l">Pièces au total</div><div class="v" id="pB">0</div></div>
-      <div class="mc"><div class="l">Protège G / D / 2</div><div class="v" id="pC">0 / 0 / 0</div></div>
-    </div>
-    <p class="note" style="margin:0 2px 8px">Soutiens mastectomie · du 28 octobre au 13 novembre</p>
-    <div class="box">
-      <table class="stt">
-        <thead id="pHead"></thead>
-        <tbody id="pTot"></tbody>
-      </table>
-    </div>
-    <div class="box pf tools" style="margin-top:12px">
-      <div class="crow">
-        <div><div class="lb">Nom et prénom</div><input type="text" id="pNom" placeholder="Awa Diop" autocomplete="off"></div>
-        <div><div class="lb">Téléphone</div><input type="tel" id="pTel" placeholder="77 000 00 00"></div>
-        <div><div class="lb">Taille</div><select id="pTaille"></select></div>
-        <div><div class="lb">Pièces</div><input type="number" id="pNb" min="1" value="1"></div>
-      </div>
-      <div class="lb">Couleurs</div>
-      <div class="chipset" id="pCol" style="margin-bottom:12px"></div>
-      <div class="lb">Protège à commander</div>
-      <div class="chipset" id="pProt"></div>
-      <p class="perr" id="pErr"></p>
-      <button class="b go" id="pAdd">+ Ajouter la précommande</button>
-    </div>
-    <div class="box" style="margin-top:12px">
-      <table>
-        <thead><tr><th>Nom</th><th>Téléphone</th><th>Taille</th><th class="n">Pièces</th><th>Couleurs</th><th>Protège</th><th class="xcol"></th></tr></thead>
-        <tbody id="pBody"></tbody>
-      </table>
-      <div class="empty" id="pEmpty" hidden>Aucune précommande pour l'instant.</div>
-    </div>
-    <p class="note">Les précommandes sont enregistrées sur cet appareil (navigateur), pas sur le serveur.</p>
   </div>
 
   <div class="bar" id="capBack" hidden>
@@ -263,8 +168,10 @@ select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:
 
 <script>
 var API="https://rafahi-relais.fayelinguere18.workers.dev";
+var DEFAULT_TYPE="Softia";
 var PAY=["Payé","Non payé"];
 var LIV=["À livrer","Livrée","Reportée"];
+var SIZES=["S","M","L","XL","2XL","3XL","4XL"];
 var COL={
   "Payé":["var(--ok-bg)","var(--ok-tx)"],
   "Non payé":["var(--no-bg)","var(--no-tx)"],
@@ -272,13 +179,6 @@ var COL={
   "Livrée":["var(--ne-bg)","var(--ne-tx)"],
   "Reportée":["var(--bl-bg)","var(--bl-tx)"]
 };
-var code=store("get","rafahi_code")||"";
-var orders=[];
-var filter="tout";
-var view="orders";
-var stock=[];
-var pending={};
-var SIZES=["S","M","L","XL","XXL","XXXL","4XL"];
 
 function store(op,k,v){
   try{
@@ -288,6 +188,14 @@ function store(op,k,v){
   }catch(e){}
   return null;
 }
+var code=store("get","rafahi_code")||"";
+var curType=store("get","rafahi_type")||DEFAULT_TYPE;
+var orders=[];
+var stock=[];
+var filter="tout";
+var view="orders";
+var pending={};
+
 function $(id){return document.getElementById(id);}
 function parseNum(v){
   if(v===""||v==null)return null;
@@ -302,10 +210,21 @@ function todayStr(){
   var d=new Date();
   return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 }
+function ordinal(n){return n===1?"1er":n+"e";}
+function typeOf(x){return x.type||DEFAULT_TYPE;}
+function cleanName(v){
+  v=(v||"").trim().replace(/\s+/g," ");
+  return v?v.charAt(0).toUpperCase()+v.slice(1):"";
+}
 function setStatus(t,err){
   var s=$("st");
   s.textContent=t;
   s.className="st"+(err?" err":"");
+}
+function setStockStatus(t,err){
+  var e=$("stS");
+  e.textContent=t;
+  e.className="st"+(err?" err":"");
 }
 
 function api(method,path,body){
@@ -330,8 +249,40 @@ function logout(msg){
   store("del","rafahi_code");
   code="";
   orders=[];
+  stock=[];
   showApp(false);
   $("loginErr").textContent=msg||"";
+}
+
+function allTypes(){
+  var t=[DEFAULT_TYPE];
+  orders.forEach(function(o){var x=typeOf(o);if(t.indexOf(x)<0)t.push(x);});
+  stock.forEach(function(it){var x=typeOf(it);if(t.indexOf(x)<0)t.push(x);});
+  if(t.indexOf(curType)<0)t.push(curType);
+  return t;
+}
+
+function renderTypes(){
+  var box=$("types");
+  box.innerHTML="";
+  allTypes().forEach(function(t){
+    var b=document.createElement("button");
+    b.type="button";
+    b.className=t===curType?"on":"";
+    b.textContent=t;
+    b.addEventListener("click",function(){
+      curType=t;
+      store("set","rafahi_type",t);
+      renderAll();
+    });
+    box.appendChild(b);
+  });
+}
+
+function renderAll(){
+  renderTypes();
+  renderOrders();
+  renderStock();
 }
 
 function load(silent){
@@ -339,8 +290,9 @@ function load(silent){
   return api("GET","/orders").then(function(d){
     orders=d.orders;
     showApp(true);
-    render();
+    renderAll();
     setStatus("À jour");
+    return loadStock(true);
   }).catch(function(e){
     if(e.message!=="Code d'accès incorrect")setStatus("Erreur : "+e.message,true);
   });
@@ -357,6 +309,17 @@ function save(o,patch){
   });
 }
 
+function grp(o){return o.livraison==="À livrer"?0:o.livraison==="Reportée"?1:2;}
+function ordersFor(t){
+  return orders.filter(function(o){return typeOf(o)===t;}).sort(function(a,b){
+    var ga=grp(a),gb=grp(b);
+    if(ga!==gb)return ga-gb;
+    var da=a.dateCommande||"9999-99-99",db=b.dateCommande||"9999-99-99";
+    if(da!==db)return da<db?-1:1;
+    var ca=a.cree||"",cb=b.cree||"";
+    return ca<cb?-1:ca>cb?1:0;
+  });
+}
 function visible(o){
   if(filter==="jour")return o.date===todayStr()&&o.livraison!=="Livrée";
   if(filter==="impayees")return o.paiement==="Non payé";
@@ -364,12 +327,9 @@ function visible(o){
 }
 
 function summary(){
-  var cl={},art=0,enc=0,nb=0;
-  orders.forEach(function(o){
-    if(o.livraison==="À livrer"){
-      nb++;
-      art+=parseNum(o.qte)||0;
-    }
+  var art=0,enc=0,nb=0;
+  ordersFor(curType).forEach(function(o){
+    if(o.livraison==="À livrer"){nb++;art+=parseNum(o.qte)||0;}
     if(o.paiement==="Non payé"&&o.livraison!=="Livrée")enc+=parseNum(o.total)||0;
   });
   $("mA").textContent=nb;
@@ -395,18 +355,18 @@ function ed(o,key,ph,opts){
   d.addEventListener("blur",function(){
     var v=d.innerText.trim();
     if(v===before)return;
+    var p={};
+    p[key]=v;
     if(num){
       var n=parseNum(v);
       d.textContent=n==null?"":fmt(n);
-      save(o,(function(){var p={};p[key]=v;return p;})());
-    }else{
-      save(o,(function(){var p={};p[key]=v;return p;})());
     }
+    save(o,p);
   });
   return d;
 }
 
-function pill(o,key,list){
+function pill(o,key,list,after){
   var b=document.createElement("button");
   b.type="button";
   b.className="pill";
@@ -419,12 +379,11 @@ function pill(o,key,list){
   }
   b.addEventListener("click",function(){
     var i=list.indexOf(o[key]);
-    var next=list[(i+1)%list.length];
-    paint();
-    var p={};p[key]=next;
+    var p={};
+    p[key]=list[(i+1)%list.length];
     save(o,p);
     paint();
-    if(filter!=="tout")setTimeout(render,250);
+    if(after)setTimeout(renderOrders,250);
   });
   paint();
   return b;
@@ -438,24 +397,40 @@ function cell(tr,child,cls){
   return td;
 }
 
-function row(o){
+function dateInput(o,key,after){
+  var di=document.createElement("input");
+  di.type="date";
+  di.value=o[key]||"";
+  di.addEventListener("change",function(){
+    var p={};
+    p[key]=di.value;
+    save(o,p);
+    if(after)setTimeout(renderOrders,250);
+  });
+  return di;
+}
+
+function row(o,rank){
   var tr=document.createElement("tr");
+  var rk=document.createElement("span");
+  if(rank){
+    rk.className="rk"+(rank===1?" first":"");
+    rk.textContent=ordinal(rank);
+  }else{
+    rk.className="rk";
+    rk.textContent="-";
+  }
+  cell(tr,rk);
+  cell(tr,dateInput(o,"dateCommande",true));
   cell(tr,ed(o,"cliente","Nom",{bold:true}));
   cell(tr,ed(o,"tailles","M (5 000)",{multi:true}));
   cell(tr,ed(o,"couleurs","M : noir",{multi:true}));
   cell(tr,ed(o,"qte","0",{num:true}),"n");
   cell(tr,ed(o,"total","0",{num:true,bold:true}),"n");
-  cell(tr,pill(o,"paiement",PAY));
-  cell(tr,pill(o,"livraison",LIV));
+  cell(tr,pill(o,"paiement",PAY,false));
+  cell(tr,pill(o,"livraison",LIV,true));
   cell(tr,ed(o,"adresse","Adresse"));
-  var di=document.createElement("input");
-  di.type="date";
-  di.value=o.date||"";
-  di.addEventListener("change",function(){
-    save(o,{date:di.value});
-    if(filter==="jour")setTimeout(render,250);
-  });
-  cell(tr,di);
+  cell(tr,dateInput(o,"date",false));
   cell(tr,ed(o,"telephone","Téléphone"));
   var x=document.createElement("button");
   x.type="button";
@@ -467,7 +442,7 @@ function row(o){
     setStatus("Suppression...");
     api("DELETE","/orders/"+o.id).then(function(){
       orders=orders.filter(function(z){return z.id!==o.id;});
-      render();
+      renderOrders();
       setStatus("Supprimé");
     }).catch(function(e){setStatus("Erreur : "+e.message,true);});
   });
@@ -476,84 +451,46 @@ function row(o){
   return tr;
 }
 
-function render(){
+function renderOrders(){
   var body=$("body");
   body.innerHTML="";
-  var list=orders.filter(visible);
-  list.forEach(function(o){body.appendChild(row(o));});
+  var all=ordersFor(curType);
+  var rank=0,ranks={};
+  all.forEach(function(o){if(o.livraison==="À livrer"){rank++;ranks[o.id]=rank;}});
+  var list=all.filter(visible);
+  list.forEach(function(o){body.appendChild(row(o,ranks[o.id]||0));});
   $("empty").hidden=list.length>0;
   summary();
 }
 
-$("loginBtn").addEventListener("click",function(){
-  var v=$("code").value.trim();
-  if(!v){$("loginErr").textContent="Écris le code d'accès";return;}
-  code=v;
-  $("loginErr").textContent="";
-  api("GET","/orders").then(function(d){
-    store("set","rafahi_code",code);
-    orders=d.orders;
-    $("code").value="";
-    showApp(true);
-    render();
-    setStatus("À jour");
-  }).catch(function(e){
-    if(e.message!=="Code d'accès incorrect")$("loginErr").textContent="Erreur : "+e.message;
-  });
-});
-$("code").addEventListener("keydown",function(e){if(e.key==="Enter")$("loginBtn").click();});
-$("logout").addEventListener("click",function(){logout("");});
-$("refresh").addEventListener("click",function(){if(view==="stock")loadStock(false);else if(view==="orders")load(false);});
-
-$("seg").addEventListener("click",function(e){
-  var b=e.target.closest("button");
-  if(!b)return;
-  filter=b.getAttribute("data-f");
-  Array.prototype.forEach.call($("seg").children,function(x){x.className=x===b?"on":"";});
-  render();
-});
-
-$("add").addEventListener("click",function(){
-  setStatus("Ajout...");
-  api("POST","/orders",{cliente:"",paiement:"Non payé",livraison:"À livrer"}).then(function(d){
-    orders.push(d.order);
-    if(filter!=="tout"){
-      filter="tout";
-      Array.prototype.forEach.call($("seg").children,function(x){x.className=x.getAttribute("data-f")==="tout"?"on":"";});
-    }
-    render();
-    setStatus("Ligne ajoutée");
-    var last=$("body").lastElementChild;
-    if(last)last.querySelector(".ed").focus();
-  }).catch(function(e){setStatus("Erreur : "+e.message,true);});
-});
-
-function setCapture(on){
-  $("app").className=on?"wrap cap":"wrap";
-  $("capBack").hidden=!on;
+function sizeCmp(a,b){
+  var ia=SIZES.indexOf(a),ib=SIZES.indexOf(b);
+  if(ia>=0||ib>=0){
+    if(ia<0)return 1;
+    if(ib<0)return -1;
+    return ia-ib;
+  }
+  var ma=/^(\d+)\s*([A-Za-z]*)$/.exec(a),mb=/^(\d+)\s*([A-Za-z]*)$/.exec(b);
+  if(ma&&mb){
+    var d=Number(ma[1])-Number(mb[1]);
+    if(d)return d;
+    return ma[2]<mb[2]?-1:ma[2]>mb[2]?1:0;
+  }
+  return a<b?-1:a>b?1:0;
 }
-$("cap").addEventListener("click",function(){setCapture(true);});
-$("capOff").addEventListener("click",function(){setCapture(false);});
 
-$("today").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-
-setInterval(function(){
-  if($("app").hidden)return;
-  var a=document.activeElement;
-  if(a&&(a.isContentEditable||a.tagName==="INPUT"))return;
-  if(view==="stock")loadStock(true);else if(view==="orders")load(true);
-},60000);
-
-function setStockStatus(t,err){
-  var e=$("stS");
-  e.textContent=t;
-  e.className="st"+(err?" err":"");
+function stockOf(t){return stock.filter(function(it){return typeOf(it)===t;});}
+function distinct(list,key){
+  var out=[];
+  list.forEach(function(it){if(out.indexOf(it[key])<0)out.push(it[key]);});
+  return out;
 }
 
 function loadStock(silent){
   if(!silent)setStockStatus("Chargement...");
   return api("GET","/stock").then(function(d){
     stock=d.stock;
+    renderTypes();
     renderStock();
     setStockStatus("À jour");
   }).catch(function(e){
@@ -561,30 +498,34 @@ function loadStock(silent){
   });
 }
 
+function delBtn(kind,value){
+  var b=document.createElement("button");
+  b.type="button";
+  b.className="xb xcol";
+  b.textContent="\u00d7";
+  b.setAttribute("aria-label","Supprimer "+(kind==="taille"?"la taille ":"la couleur ")+value);
+  b.addEventListener("click",function(){removeGroup(kind,value);});
+  return b;
+}
+
 function renderStock(){
-  var colors=[],sizes=[],map={};
-  stock.forEach(function(it){
-    if(colors.indexOf(it.couleur)<0)colors.push(it.couleur);
-    if(sizes.indexOf(it.taille)<0)sizes.push(it.taille);
-    map[it.taille+"|"+it.couleur]=it;
-  });
-  sizes.sort(function(a,b){
-    var ia=SIZES.indexOf(a),ib=SIZES.indexOf(b);
-    return (ia<0?99:ia)-(ib<0?99:ib);
-  });
+  var items=stockOf(curType);
+  var colors=distinct(items,"couleur");
+  var sizes=distinct(items,"taille").sort(sizeCmp);
+  var map={};
+  items.forEach(function(it){map[it.taille+"|"+it.couleur]=it;});
   var head=$("sHead"),body=$("sBody");
   head.innerHTML="";
   body.innerHTML="";
-  $("sEmpty").hidden=stock.length>0;
+  $("sEmpty").hidden=items.length>0;
   var tr=document.createElement("tr");
-  var heads=["Taille"].concat(colors).concat(["Total"]);
-  heads.forEach(function(h,i){
+  ["Taille"].concat(colors).concat(["Total"]).forEach(function(h,i){
     var th=document.createElement("th");
     th.appendChild(document.createTextNode(h));
     if(i>0&&i<=colors.length)th.appendChild(delBtn("couleur",h));
     tr.appendChild(th);
   });
-  head.appendChild(tr);
+  if(items.length)head.appendChild(tr);
   var tot=0,low=0,out=0;
   sizes.forEach(function(sz){
     var r=document.createElement("tr");
@@ -685,22 +626,12 @@ function moveStock(it,delta){
   });
 }
 
-function delBtn(kind,value){
-  var b=document.createElement("button");
-  b.type="button";
-  b.className="xb xcol";
-  b.textContent="\u00d7";
-  b.setAttribute("aria-label","Supprimer "+(kind==="taille"?"la taille ":"la couleur ")+value);
-  b.addEventListener("click",function(){removeGroup(kind,value);});
-  return b;
-}
-
 function removeGroup(kind,value){
-  var items=stock.filter(function(it){return it[kind]===value;});
+  var items=stockOf(curType).filter(function(it){return it[kind]===value;});
   if(!items.length)return;
   var total=items.reduce(function(a,it){return a+(it.qte||0);},0);
   var label=kind==="taille"?"la taille ":"la couleur ";
-  var msg="Supprimer "+label+value+" ?\n"+items.length+" lignes de stock seront retirées";
+  var msg="Supprimer "+label+value+" ("+curType+") ?\n"+items.length+" lignes de stock seront retirées";
   if(total>0)msg+=" (il reste "+total+" pièces en stock)";
   msg+=".";
   if(!confirm(msg))return;
@@ -715,62 +646,145 @@ function removeGroup(kind,value){
   });
 }
 
-function cleanName(v,upper){
-  v=(v||"").trim().replace(/\s+/g," ");
-  if(!v)return "";
-  return upper?v.toUpperCase():v.charAt(0).toUpperCase()+v.slice(1).toLowerCase();
-}
-
-function distinct(key){
-  var out=[];
-  stock.forEach(function(it){if(out.indexOf(it[key])<0)out.push(it[key]);});
-  return out;
+function createRows(pairs){
+  var chain=Promise.resolve();
+  pairs.forEach(function(p){
+    chain=chain.then(function(){
+      return api("POST","/stock",{taille:p.taille,couleur:p.couleur,type:p.type,qte:0});
+    });
+  });
+  return chain;
 }
 
 $("addColor").addEventListener("click",function(){
-  var name=cleanName(prompt("Nom de la nouvelle couleur ?"),false);
+  var name=cleanName(prompt("Nom de la nouvelle couleur ?"));
   if(!name)return;
-  var colors=distinct("couleur");
+  var items=stockOf(curType);
+  var colors=distinct(items,"couleur");
   if(colors.some(function(c){return c.toLowerCase()===name.toLowerCase();})){
     setStockStatus("Cette couleur existe déjà",true);
     return;
   }
-  var sizes=distinct("taille");
-  if(!sizes.length)sizes=SIZES.slice();
+  var sizes=distinct(items,"taille");
+  if(!sizes.length){
+    setStockStatus("Ajoute d'abord une taille",true);
+    return;
+  }
   setStockStatus("Ajout de la couleur...");
-  var chain=Promise.resolve();
-  sizes.forEach(function(sz){
-    chain=chain.then(function(){return api("POST","/stock",{taille:sz,couleur:name,qte:0});});
-  });
-  chain.then(function(){return loadStock(false);}).catch(function(e){
+  createRows(sizes.map(function(sz){return {taille:sz,couleur:name,type:curType};})).then(function(){
+    return loadStock(false);
+  }).catch(function(e){
     setStockStatus("Erreur : "+e.message,true);
     loadStock(true);
   });
 });
 
 $("addSize").addEventListener("click",function(){
-  var name=cleanName(prompt("Nom de la nouvelle taille ? (par exemple 38A)"),true);
+  var name=(prompt("Nom de la nouvelle taille ? (par exemple 38A)")||"").trim().replace(/\s+/g,"").toUpperCase();
   if(!name)return;
-  var sizes=distinct("taille");
-  if(sizes.some(function(z){return z.toUpperCase()===name;})){
+  var items=stockOf(curType);
+  if(distinct(items,"taille").some(function(z){return z.toUpperCase()===name;})){
     setStockStatus("Cette taille existe déjà",true);
     return;
   }
-  var colors=distinct("couleur");
+  var colors=distinct(items,"couleur");
+  if(!colors.length)colors=distinct(stock,"couleur");
   if(!colors.length){
-    setStockStatus("Ajoute d'abord une couleur",true);
+    setStockStatus("Aucune couleur disponible",true);
     return;
   }
   setStockStatus("Ajout de la taille...");
-  var chain=Promise.resolve();
-  colors.forEach(function(c){
-    chain=chain.then(function(){return api("POST","/stock",{taille:name,couleur:c,qte:0});});
-  });
-  chain.then(function(){return loadStock(false);}).catch(function(e){
+  createRows(colors.map(function(c){return {taille:name,couleur:c,type:curType};})).then(function(){
+    return loadStock(false);
+  }).catch(function(e){
     setStockStatus("Erreur : "+e.message,true);
     loadStock(true);
   });
 });
+
+$("addType").addEventListener("click",function(){
+  var name=cleanName(prompt("Nom du nouveau type de soutien ?"));
+  if(!name)return;
+  if(allTypes().some(function(t){return t.toLowerCase()===name.toLowerCase();})){
+    alert("Ce type existe déjà.");
+    return;
+  }
+  var raw=prompt("Tailles de "+name+" ? Sépare-les par des virgules (par exemple S, M, L ou 90C, 95C, 100D)");
+  var sizes=(raw||"").split(",").map(function(z){return z.trim().replace(/\s+/g,"").toUpperCase();}).filter(function(z,i,a){return z&&a.indexOf(z)===i;});
+  if(!sizes.length)return;
+  var colors=distinct(stock,"couleur");
+  if(!colors.length){
+    alert("Ajoute d'abord des couleurs dans le type "+DEFAULT_TYPE+".");
+    return;
+  }
+  setStockStatus("Création du type...");
+  var pairs=[];
+  sizes.forEach(function(sz){colors.forEach(function(c){pairs.push({taille:sz,couleur:c,type:name});});});
+  createRows(pairs).then(function(){
+    curType=name;
+    store("set","rafahi_type",name);
+    return loadStock(false);
+  }).then(function(){
+    renderAll();
+  }).catch(function(e){
+    setStockStatus("Erreur : "+e.message,true);
+    loadStock(true);
+  });
+});
+
+$("loginBtn").addEventListener("click",function(){
+  var v=$("code").value.trim();
+  if(!v){$("loginErr").textContent="Écris le code d'accès";return;}
+  code=v;
+  $("loginErr").textContent="";
+  api("GET","/orders").then(function(d){
+    store("set","rafahi_code",code);
+    orders=d.orders;
+    $("code").value="";
+    showApp(true);
+    renderAll();
+    setStatus("À jour");
+    loadStock(true);
+  }).catch(function(e){
+    if(e.message!=="Code d'accès incorrect")$("loginErr").textContent="Erreur : "+e.message;
+  });
+});
+$("code").addEventListener("keydown",function(e){if(e.key==="Enter")$("loginBtn").click();});
+$("logout").addEventListener("click",function(){logout("");});
+$("refresh").addEventListener("click",function(){if(view==="stock")loadStock(false);else load(false);});
+
+$("seg").addEventListener("click",function(e){
+  var b=e.target.closest("button");
+  if(!b)return;
+  filter=b.getAttribute("data-f");
+  Array.prototype.forEach.call($("seg").children,function(x){x.className=x===b?"on":"";});
+  renderOrders();
+});
+
+$("add").addEventListener("click",function(){
+  setStatus("Ajout...");
+  api("POST","/orders",{cliente:"",paiement:"Non payé",livraison:"À livrer",type:curType,dateCommande:todayStr()}).then(function(d){
+    orders.push(d.order);
+    if(filter!=="tout"){
+      filter="tout";
+      Array.prototype.forEach.call($("seg").children,function(x){x.className=x.getAttribute("data-f")==="tout"?"on":"";});
+    }
+    renderOrders();
+    setStatus("Ligne ajoutée");
+    var rows=$("body").children;
+    for(var i=0;i<rows.length;i++){
+      var first=rows[i].querySelector(".ed");
+      if(first&&first.textContent===""&&rows[i].querySelector(".rk")){first.focus();}
+    }
+  }).catch(function(e){setStatus("Erreur : "+e.message,true);});
+});
+
+function setCapture(on){
+  $("app").className=on?"wrap cap":"wrap";
+  $("capBack").hidden=!on;
+}
+$("cap").addEventListener("click",function(){setCapture(true);});
+$("capOff").addEventListener("click",function(){setCapture(false);});
 
 $("tabs").addEventListener("click",function(e){
   var b=e.target.closest("button");
@@ -779,221 +793,17 @@ $("tabs").addEventListener("click",function(e){
   Array.prototype.forEach.call($("tabs").children,function(x){x.className=x===b?"on":"";});
   $("viewOrders").hidden=view!=="orders";
   $("viewStock").hidden=view!=="stock";
-  $("viewSizes").hidden=view!=="sizes";
-  $("viewPre").hidden=view!=="pre";
   if(view==="stock")loadStock(false);
-  if(view==="pre")renderPre();
 });
 
-var PRE_SIZES=["S","M","L","XL","2XL","3XL","4XL"];
-var PRE_COLORS=["Rose","Bleu","Noir","Beige"];
-var PRE_PROT=["Gauche","Droit","Les deux"];
-var PRE_KEY="rafahi_precommandes";
-var pre=[];
-try{pre=JSON.parse(store("get",PRE_KEY)||"[]");if(!Array.isArray(pre))pre=[];}catch(e){pre=[];}
-var preSel={couleurs:[],protege:""};
+$("today").textContent=new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 
-function preSave(){store("set",PRE_KEY,JSON.stringify(pre));}
-function mk(tag,text,cls){
-  var e=document.createElement(tag);
-  if(text!=null)e.textContent=text;
-  if(cls)e.className=cls;
-  return e;
-}
-function preChips(box,list,multi){
-  box.innerHTML="";
-  list.forEach(function(v){
-    var b=mk("button",v);
-    b.type="button";
-    var on=multi?preSel.couleurs.indexOf(v)>-1:preSel.protege===v;
-    b.className=on?"on":"";
-    b.addEventListener("click",function(){
-      if(multi){
-        var i=preSel.couleurs.indexOf(v);
-        if(i>-1)preSel.couleurs.splice(i,1);else preSel.couleurs.push(v);
-      }else{
-        preSel.protege=preSel.protege===v?"":v;
-      }
-      preChips(box,list,multi);
-    });
-    box.appendChild(b);
-  });
-}
-function renderPre(){
-  var tot={},all=0,g=0,d=0,t=0;
-  PRE_SIZES.forEach(function(z){tot[z]=0;});
-  pre.forEach(function(p){
-    tot[p.taille]=(tot[p.taille]||0)+p.nb;
-    all+=p.nb;
-    if(p.protege==="Gauche")g++;else if(p.protege==="Droit")d++;else if(p.protege==="Les deux")t++;
-  });
-  $("pA").textContent=pre.length;
-  $("pB").textContent=all;
-  $("pC").textContent=g+" / "+d+" / "+t;
-  var head=$("pHead");head.innerHTML="";
-  var hr=mk("tr");hr.appendChild(mk("th","Taille"));
-  PRE_SIZES.forEach(function(z){hr.appendChild(mk("th",z));});
-  hr.appendChild(mk("th","Total"));head.appendChild(hr);
-  var tb=$("pTot");tb.innerHTML="";
-  var tr=mk("tr");tr.appendChild(mk("td","Pièces"));
-  PRE_SIZES.forEach(function(z){
-    var td=mk("td",tot[z]);
-    if(!tot[z])td.className="tt";
-    tr.appendChild(td);
-  });
-  var tt=mk("td",all);tt.style.fontWeight="600";tr.appendChild(tt);tb.appendChild(tr);
-  var body=$("pBody");body.innerHTML="";
-  $("pEmpty").hidden=pre.length>0;
-  pre.forEach(function(p,i){
-    var r=mk("tr");
-    r.appendChild(mk("td",p.nom));
-    r.appendChild(mk("td",p.tel||""));
-    r.appendChild(mk("td",p.taille));
-    var n=mk("td",p.nb);n.className="n";r.appendChild(n);
-    var c=mk("td");
-    p.couleurs.forEach(function(x){c.appendChild(mk("span",x,"pt"));});
-    r.appendChild(c);
-    var pr=mk("td");
-    pr.appendChild(mk("span",p.protege,"pt "+(p.protege==="Gauche"?"g":p.protege==="Droit"?"d":"b")));
-    r.appendChild(pr);
-    var x=mk("td");x.className="xcol";
-    var xb=mk("button","×","xb");xb.type="button";xb.setAttribute("aria-label","Supprimer "+p.nom);
-    xb.addEventListener("click",function(){
-      if(confirm("Supprimer la précommande de "+p.nom+" ?")){pre.splice(i,1);preSave();renderPre();}
-    });
-    x.appendChild(xb);r.appendChild(x);
-    body.appendChild(r);
-  });
-}
-(function(){
-  var sel=$("pTaille");
-  PRE_SIZES.forEach(function(z){var o=mk("option",z);o.value=z;sel.appendChild(o);});
-  preChips($("pCol"),PRE_COLORS,true);
-  preChips($("pProt"),PRE_PROT,false);
-  $("pAdd").addEventListener("click",function(){
-    var nom=$("pNom").value.trim(),nb=parseInt($("pNb").value,10),e=$("pErr");
-    if(!nom){e.textContent="Entre le nom et le prénom de la cliente.";return;}
-    if(!nb||nb<1){e.textContent="Entre un nombre de pièces (1 ou plus).";return;}
-    if(!preSel.couleurs.length){e.textContent="Choisis au moins une couleur.";return;}
-    if(!preSel.protege){e.textContent="Choisis le protège : gauche, droit ou les deux.";return;}
-    e.textContent="";
-    pre.push({nom:nom,tel:$("pTel").value.trim(),taille:$("pTaille").value,nb:nb,couleurs:preSel.couleurs.slice(),protege:preSel.protege});
-    preSave();
-    $("pNom").value="";$("pTel").value="";$("pNb").value="1";
-    preSel={couleurs:[],protege:""};
-    preChips($("pCol"),PRE_COLORS,true);
-    preChips($("pProt"),PRE_PROT,false);
-    renderPre();
-  });
-  $("pNom").addEventListener("input",function(){$("pErr").textContent="";});
-})();
-
-var BANDS=[[80,65,30],[85,70,32],[90,75,34],[95,80,36],[100,85,38],[105,90,40],[110,95,42],[115,100,44],[120,105,46]];
-var CUPS=[["A","A"],["B","B"],["C","C"],["D","D"],["E","DD"],["F","E"],["G","F"],["H","FF"],["I","G"]];
-var SYS={fr:{name:"Français",bi:0,ci:0},eu:{name:"Européen",bi:1,ci:0},uk:{name:"UK / US",bi:2,ci:1}};
-var bandIdx=3,cupIdx=5;
-
-function fillSelect(sel,values,idx){
-  sel.innerHTML="";
-  values.forEach(function(v,i){
-    var o=document.createElement("option");
-    o.value=i;
-    o.textContent=v;
-    sel.appendChild(o);
-  });
-  sel.value=idx;
-}
-
-function sizeText(sysKey,bi,ci){
-  var sy=SYS[sysKey];
-  return BANDS[bi][sy.bi]+CUPS[ci][sy.ci];
-}
-
-function renderConverter(){
-  var key=$("cSys").value;
-  var sy=SYS[key];
-  fillSelect($("cBand"),BANDS.map(function(b){return b[sy.bi];}),bandIdx);
-  fillSelect($("cCup"),CUPS.map(function(c){return c[sy.ci];}),cupIdx);
-  var res=$("cRes");
-  res.innerHTML="";
-  Object.keys(SYS).forEach(function(k){
-    var d=document.createElement("div");
-    d.className="mc"+(k===key?" hl":"");
-    var l=document.createElement("div");
-    l.className="l";
-    l.textContent=SYS[k].name;
-    var v=document.createElement("div");
-    v.className="v";
-    v.textContent=sizeText(k,bandIdx,cupIdx);
-    d.appendChild(l);
-    d.appendChild(v);
-    res.appendChild(d);
-  });
-  $("cAdd").textContent="Ajouter "+sizeText("fr",bandIdx,cupIdx)+" au stock";
-}
-
-function renderRefs(){
-  var rb=$("rBands");
-  BANDS.forEach(function(b){
-    var tr=document.createElement("tr");
-    b.forEach(function(v){
-      var td=document.createElement("td");
-      td.textContent=v;
-      tr.appendChild(td);
-    });
-    rb.appendChild(tr);
-  });
-  var rc=$("rCups");
-  CUPS.forEach(function(c){
-    var tr=document.createElement("tr");
-    c.forEach(function(v){
-      var td=document.createElement("td");
-      td.textContent=v;
-      tr.appendChild(td);
-    });
-    rc.appendChild(tr);
-  });
-}
-
-$("cSys").addEventListener("change",renderConverter);
-$("cBand").addEventListener("change",function(){bandIdx=Number($("cBand").value);renderConverter();});
-$("cCup").addEventListener("change",function(){cupIdx=Number($("cCup").value);renderConverter();});
-
-function setSizesStatus(t,err){
-  var e=$("tS");
-  e.textContent=t;
-  e.className="st"+(err?" err":"");
-}
-
-$("cAdd").addEventListener("click",function(){
-  var name=sizeText("fr",bandIdx,cupIdx);
-  setSizesStatus("Vérification du stock...");
-  loadStock(true).then(function(){
-    var sizes=distinct("taille");
-    if(sizes.some(function(z){return z.toUpperCase()===name;})){
-      setSizesStatus(name+" existe déjà dans le stock",true);
-      return;
-    }
-    var colors=distinct("couleur");
-    if(!colors.length){
-      setSizesStatus("Ajoute d'abord une couleur dans l'onglet Stock",true);
-      return;
-    }
-    setSizesStatus("Ajout de "+name+"...");
-    var chain=Promise.resolve();
-    colors.forEach(function(c){
-      chain=chain.then(function(){return api("POST","/stock",{taille:name,couleur:c,qte:0});});
-    });
-    return chain.then(function(){return loadStock(true);}).then(function(){
-      setSizesStatus(name+" ajoutée au stock");
-    });
-  }).catch(function(e){
-    setSizesStatus("Erreur : "+e.message,true);
-  });
-});
-
-renderConverter();
-renderRefs();
+setInterval(function(){
+  if($("app").hidden)return;
+  var a=document.activeElement;
+  if(a&&(a.isContentEditable||a.tagName==="INPUT"))return;
+  if(view==="stock")loadStock(true);else load(true);
+},60000);
 
 if(code){
   load(false).then(function(){if($("app").hidden)showApp(false);});
