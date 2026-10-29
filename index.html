@@ -69,6 +69,7 @@ button.go:hover{background:#34503c}
 .stt th,.stt td{text-align:center;white-space:nowrap}
 .stt th:first-child,.stt td:first-child{text-align:left}
 .stt .tt{color:var(--muted)}
+.stt tr.tot td{font-weight:600;border-top:1px solid var(--line)}
 .mh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .mh h2{font-size:18px;font-weight:600;margin:0}
 .mh .per{color:var(--muted);font-size:13px;margin-top:2px}
@@ -210,6 +211,7 @@ button.go:hover{background:#34503c}
         <tbody id="sBody"></tbody>
       </table>
       <div class="empty" id="sEmpty" hidden>Aucun article en stock pour ce type.</div>
+      <div class="empty" id="sSetup" hidden>Le stock mastectomie n'est pas encore créé.<br><br><button class="b go" id="setupMast">Créer le stock (S à 4XL, Beige, Rose, Noir, Bleu, gauche et droit)</button></div>
     </div>
     <div class="bar tools">
       <button class="b" id="addSize">+ Ajouter une taille</button>
@@ -738,7 +740,15 @@ function sizeCmp(a,b){
   return a<b?-1:a>b?1:0;
 }
 
-function stockOf(t){return stock.filter(function(it){return typeOf(it)===t;});}
+function stockOf(t){return stock.filter(function(it){return typeOf(it)===t&&(t!==MAST_TYPE||it.cote);});}
+var SIDES=["Gauche","Droit"];
+var ST_COLORS=["Beige","Rose","Noir","Bleu"];
+function withSides(pairs){
+  if(!isMast())return pairs;
+  var out=[];
+  pairs.forEach(function(p){SIDES.forEach(function(c){out.push({taille:p.taille,couleur:p.couleur,type:p.type,cote:c});});});
+  return out;
+}
 function distinct(list,key){
   var out=[];
   list.forEach(function(it){if(out.indexOf(it[key])<0)out.push(it[key]);});
@@ -767,7 +777,107 @@ function delBtn(kind,value){
   return b;
 }
 
+function renderMastStock(){
+  var items=stockOf(MAST_TYPE);
+  var head=$("sHead"),body=$("sBody");
+  head.innerHTML="";
+  body.innerHTML="";
+  $("sEmpty").hidden=true;
+  $("sSetup").hidden=items.length>0;
+  if(!items.length){
+    $("sT").textContent=0;$("sL").textContent=0;$("sO").textContent=0;
+    return;
+  }
+  var colors=distinct(items,"couleur").sort(function(a,b){
+    var ia=ST_COLORS.indexOf(a),ib=ST_COLORS.indexOf(b);
+    if(ia<0)ia=99;
+    if(ib<0)ib=99;
+    return ia!==ib?ia-ib:(a<b?-1:a>b?1:0);
+  });
+  var sizes=distinct(items,"taille").sort(sizeCmp);
+  var map={};
+  items.forEach(function(it){map[it.taille+"|"+it.couleur+"|"+it.cote]=it;});
+  var tr1=document.createElement("tr"),tr2=document.createElement("tr");
+  var th0=document.createElement("th");
+  th0.rowSpan=2;
+  th0.textContent="Taille";
+  tr1.appendChild(th0);
+  colors.forEach(function(c){
+    var th=document.createElement("th");
+    th.colSpan=2;
+    th.appendChild(document.createTextNode(c));
+    th.appendChild(delBtn("couleur",c));
+    tr1.appendChild(th);
+    SIDES.forEach(function(s){var h=document.createElement("th");h.textContent=s;tr2.appendChild(h);});
+  });
+  var thT=document.createElement("th");
+  thT.colSpan=2;
+  thT.textContent="Reste en tout";
+  tr1.appendChild(thT);
+  SIDES.forEach(function(s){var h=document.createElement("th");h.textContent=s;tr2.appendChild(h);});
+  head.appendChild(tr1);
+  head.appendChild(tr2);
+  var tot=0,low=0,out=0,colSum={},grand={Gauche:0,Droit:0};
+  sizes.forEach(function(sz){
+    var r=document.createElement("tr");
+    var t0=document.createElement("td");
+    t0.style.fontWeight="600";
+    t0.appendChild(document.createTextNode(sz));
+    t0.appendChild(delBtn("taille",sz));
+    r.appendChild(t0);
+    var rowSum={Gauche:0,Droit:0};
+    colors.forEach(function(c){
+      SIDES.forEach(function(s){
+        var td=document.createElement("td");
+        var it=map[sz+"|"+c+"|"+s];
+        if(it){
+          td.appendChild(stockCell(it));
+          rowSum[s]+=it.qte;
+          grand[s]+=it.qte;
+          colSum[c+"|"+s]=(colSum[c+"|"+s]||0)+it.qte;
+          tot+=it.qte;
+          if(it.qte===0)out++;else if(it.qte<=2)low++;
+        }else{
+          td.textContent="-";
+          td.style.color="var(--muted)";
+        }
+        r.appendChild(td);
+      });
+    });
+    SIDES.forEach(function(s){
+      var td=document.createElement("td");
+      td.className="tt";
+      td.textContent=rowSum[s];
+      r.appendChild(td);
+    });
+    body.appendChild(r);
+  });
+  var f=document.createElement("tr");
+  f.className="tot";
+  var f0=document.createElement("td");
+  f0.textContent="Total";
+  f.appendChild(f0);
+  colors.forEach(function(c){
+    SIDES.forEach(function(s){
+      var td=document.createElement("td");
+      td.textContent=colSum[c+"|"+s]||0;
+      f.appendChild(td);
+    });
+  });
+  SIDES.forEach(function(s){
+    var td=document.createElement("td");
+    td.textContent=grand[s];
+    f.appendChild(td);
+  });
+  body.appendChild(f);
+  $("sT").textContent=tot;
+  $("sL").textContent=low;
+  $("sO").textContent=out;
+}
+
 function renderStock(){
+  if(isMast()){renderMastStock();return;}
+  $("sSetup").hidden=true;
   var items=stockOf(curType);
   var colors=distinct(items,"couleur");
   var sizes=distinct(items,"taille").sort(sizeCmp);
@@ -909,13 +1019,14 @@ function createRows(pairs){
   var chain=Promise.resolve();
   pairs.forEach(function(p){
     chain=chain.then(function(){
-      return api("POST","/stock",{taille:p.taille,couleur:p.couleur,type:p.type,qte:0});
+      return api("POST","/stock",{taille:p.taille,couleur:p.couleur,type:p.type,cote:p.cote,qte:0});
     });
   });
   return chain;
 }
 
 $("addColor").addEventListener("click",function(){
+  if(isMast()&&!stockOf(curType).length){setStockStatus("Crée d'abord le stock mastectomie",true);return;}
   var name=cleanName(prompt("Nom de la nouvelle couleur ?"));
   if(!name)return;
   var items=stockOf(curType);
@@ -930,7 +1041,7 @@ $("addColor").addEventListener("click",function(){
     return;
   }
   setStockStatus("Ajout de la couleur...");
-  createRows(sizes.map(function(sz){return {taille:sz,couleur:name,type:curType};})).then(function(){
+  createRows(withSides(sizes.map(function(sz){return {taille:sz,couleur:name,type:curType};}))).then(function(){
     return loadStock(false);
   }).catch(function(e){
     setStockStatus("Erreur : "+e.message,true);
@@ -939,6 +1050,7 @@ $("addColor").addEventListener("click",function(){
 });
 
 $("addSize").addEventListener("click",function(){
+  if(isMast()&&!stockOf(curType).length){setStockStatus("Crée d'abord le stock mastectomie",true);return;}
   var name=(prompt("Nom de la nouvelle taille ? (par exemple 38A)")||"").trim().replace(/\s+/g,"").toUpperCase();
   if(!name)return;
   var items=stockOf(curType);
@@ -953,9 +1065,39 @@ $("addSize").addEventListener("click",function(){
     return;
   }
   setStockStatus("Ajout de la taille...");
-  createRows(colors.map(function(c){return {taille:name,couleur:c,type:curType};})).then(function(){
+  createRows(withSides(colors.map(function(c){return {taille:name,couleur:c,type:curType};}))).then(function(){
     return loadStock(false);
   }).catch(function(e){
+    setStockStatus("Erreur : "+e.message,true);
+    loadStock(true);
+  });
+});
+
+$("setupMast").addEventListener("click",function(){
+  var legacy=stock.filter(function(it){return it.type===MAST_TYPE&&!it.cote;});
+  var pairs=[];
+  SIZES.forEach(function(sz){ST_COLORS.forEach(function(c){SIDES.forEach(function(sd){
+    pairs.push({taille:sz,couleur:c,type:MAST_TYPE,cote:sd});
+  });});});
+  var msg="Créer le stock mastectomie : "+pairs.length+" lignes (7 tailles, 4 couleurs, gauche et droit), toutes à 0.";
+  if(legacy.length)msg+="\n"+legacy.length+" anciennes lignes de stock mastectomie seront supprimées.";
+  msg+="\nCela prend environ une minute.";
+  if(!confirm(msg))return;
+  var btn=$("setupMast");
+  btn.disabled=true;
+  var n=0,total=legacy.length+pairs.length;
+  function tick(){n++;setStockStatus("Création... "+n+"/"+total);}
+  var chain=Promise.resolve();
+  legacy.forEach(function(it){
+    chain=chain.then(function(){return api("DELETE","/stock/"+it.id);}).then(tick);
+  });
+  pairs.forEach(function(p){
+    chain=chain.then(function(){
+      return api("POST","/stock",{taille:p.taille,couleur:p.couleur,type:p.type,cote:p.cote,qte:0});
+    }).then(tick);
+  });
+  chain.then(function(){btn.disabled=false;return loadStock(false);}).catch(function(e){
+    btn.disabled=false;
     setStockStatus("Erreur : "+e.message,true);
     loadStock(true);
   });
