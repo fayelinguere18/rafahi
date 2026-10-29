@@ -104,6 +104,9 @@ button.go:hover{background:#34503c}
 .rfoot .nm{font-weight:600}
 .rfoot .pg{background:var(--bl-tx);color:#fff}
 .rfoot .pd{background:var(--ok-tx);color:#fff}
+.rtot .b3{background:var(--wa-bg);color:var(--wa-tx)}
+.pb{background:var(--wa-bg);color:var(--wa-tx)}
+.rfoot .pb{background:var(--wa-tx);color:#fff}
 .pc.zero{background:transparent;color:#c0b9a8;font-weight:400}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
 .bd{border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600}
@@ -213,6 +216,7 @@ button.go:hover{background:#34503c}
           <div class="all"><span class="l">Total à commander</span><b id="rTotAll">0</b></div>
           <div class="g"><span class="l">Sein gauche</span><b id="rTotG">0</b></div>
           <div class="d"><span class="l">Sein droit</span><b id="rTotD">0</b></div>
+          <div class="b3" id="rBoxB" hidden><span class="l">Les deux seins</span><b id="rTotB">0</b></div>
         </div>
         <div class="rgrid" id="rCards"></div>
         <div class="empty" id="rEmpty" hidden>Rien à calculer pour le moment.</div>
@@ -700,7 +704,7 @@ function mastRecap(){
     if(!q)return;
     var sz=(o.tailles||"").trim().toUpperCase();
     var cols=(o.couleurs||"").split(",").map(cleanName).filter(function(c){return c;});
-    var sides=o.protege==="Les deux"?["Gauche","Droit"]:(o.protege?[o.protege]:[]);
+    var sides=o.protege?[o.protege]:[];
     var name=(o.cliente||"").trim()||"(sans nom)";
     if(!sz||!cols.length||!sides.length||q%cols.length){warn.push(name);return;}
     var each=q/cols.length;
@@ -733,22 +737,28 @@ function mastRecap(){
     if(txt!=null)e.textContent=txt;
     return e;
   }
+  var gB=0;
   sizes.forEach(function(sz){
     var card=el("div","rcard");
-    var sG=0,sD=0;
+    var sG=0,sD=0,sB=0;
+    var hasB=used.some(function(c){return data[sz][c+"|Les deux"];});
     var rows=el("div","");
+    function pills(r,g,d,b){
+      r.appendChild(el("span","pc pg"+(g?"":" zero"),"G "+g));
+      r.appendChild(el("span","pc pd"+(d?"":" zero"),"D "+d));
+      if(hasB)r.appendChild(el("span","pc pb"+(b?"":" zero"),"G+D "+b));
+    }
     used.forEach(function(c){
-      var g=data[sz][c+"|Gauche"]||0,d=data[sz][c+"|Droit"]||0;
-      if(!g&&!d)return;
-      sG+=g;sD+=d;
+      var g=data[sz][c+"|Gauche"]||0,d=data[sz][c+"|Droit"]||0,b=data[sz][c+"|Les deux"]||0;
+      if(!g&&!d&&!b)return;
+      sG+=g;sD+=d;sB+=b;
       var r=el("div","rrow");
       var sw=el("span","sw");
       sw.style.background=SW[c]||"#b3ab98";
       r.appendChild(sw);
       r.appendChild(el("span","nm",c));
-      r.appendChild(el("span","tc",String(g+d)));
-      r.appendChild(el("span","pc pg"+(g?"":" zero"),"G "+g));
-      r.appendChild(el("span","pc pd"+(d?"":" zero"),"D "+d));
+      r.appendChild(el("span","tc",String(g+d+b)));
+      pills(r,g,d,b);
       rows.appendChild(r);
     });
     var f=el("div","rrow rfoot");
@@ -756,42 +766,47 @@ function mastRecap(){
     sp.style.visibility="hidden";
     f.appendChild(sp);
     f.appendChild(el("span","nm","Total"));
-    f.appendChild(el("span","tc",String(sG+sD)));
-    f.appendChild(el("span","pc pg","G "+sG));
-    f.appendChild(el("span","pc pd","D "+sD));
+    f.appendChild(el("span","tc",String(sG+sD+sB)));
+    pills(f,sG,sD,sB);
     rows.appendChild(f);
     var h=el("div","rh");
     h.appendChild(el("span","rsz",sz));
-    h.appendChild(el("span","rn",(sG+sD)+(sG+sD>1?" pièces":" pièce")));
+    var n=sG+sD+sB;
+    h.appendChild(el("span","rn",n+(n>1?" pièces":" pièce")));
     card.appendChild(h);
     card.appendChild(rows);
     box.appendChild(card);
-    gG+=sG;gD+=sD;
+    gG+=sG;gD+=sD;gB+=sB;
   });
   $("rTotG").textContent=gG;
   $("rTotD").textContent=gD;
-  $("rTotAll").textContent=gG+gD;
+  $("rTotB").textContent=gB;
+  $("rBoxB").hidden=!gB;
+  $("rTotAll").textContent=gG+gD+gB;
 }
 
 function recapText(){
-  var r=lastRecap,out=["Commande soutiens mastectomie",""],gG=0,gD=0;
+  var r=lastRecap,out=["Commande soutiens mastectomie",""],gG=0,gD=0,gB=0;
   r.sizes.forEach(function(sz){
-    var sG=0,sD=0,lines=[];
+    var sG=0,sD=0,sB=0,lines=[];
     r.colors.forEach(function(c){
-      var g=r.data[sz][c+"|Gauche"]||0,d=r.data[sz][c+"|Droit"]||0;
-      if(!g&&!d)return;
+      var g=r.data[sz][c+"|Gauche"]||0,d=r.data[sz][c+"|Droit"]||0,b=r.data[sz][c+"|Les deux"]||0;
+      if(!g&&!d&&!b)return;
       var parts=[];
       if(g)parts.push(g+" gauche");
       if(d)parts.push(d+" droit");
+      if(b)parts.push(b+" pour les deux seins");
       lines.push("- "+c+" : "+parts.join(", "));
-      sG+=g;sD+=d;
+      sG+=g;sD+=d;sB+=b;
     });
-    out.push("Taille "+sz+" ("+(sG+sD)+" pièces) :");
+    out.push("Taille "+sz+" ("+(sG+sD+sB)+" pièces) :");
     out=out.concat(lines);
     out.push("");
-    gG+=sG;gD+=sD;
+    gG+=sG;gD+=sD;gB+=sB;
   });
-  out.push("TOTAL : "+(gG+gD)+" pièces ("+gG+" gauche, "+gD+" droit)");
+  var tail=gG+" gauche, "+gD+" droit";
+  if(gB)tail+=", "+gB+" pour les deux seins";
+  out.push("TOTAL : "+(gG+gD+gB)+" pièces ("+tail+")");
   return out.join("\n");
 }
 
