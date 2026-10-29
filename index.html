@@ -80,6 +80,26 @@ button.go:hover{background:#34503c}
 .chips{display:flex;gap:5px;flex-wrap:wrap}
 .chip{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:2px 10px;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
 .chip.on{background:var(--sage-soft);border-color:var(--sage);color:var(--sage-dark);font-weight:600}
+.rtot{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 12px}
+.rtot>div{flex:1;min-width:110px;border-radius:12px;padding:10px 14px}
+.rtot .l{display:block;font-size:12px}
+.rtot b{font-size:26px;font-weight:600;line-height:1.2}
+.rtot .all{background:var(--sage-dark);color:#fff}
+.rtot .all .l{color:#dfe9e0}
+.rtot .g{background:var(--bl-bg);color:var(--bl-tx)}
+.rtot .d{background:var(--ok-bg);color:var(--ok-tx)}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.rcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.rsz{font-size:22px;font-weight:600}
+.rn{font-size:12px;color:var(--muted)}
+.rrow{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line)}
+.sw{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.18);flex:none}
+.nm{flex:1;font-size:13px}
+.pc{border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;min-width:50px;text-align:center}
+.pg{background:var(--bl-bg);color:var(--bl-tx)}
+.pd{background:var(--ok-bg);color:var(--ok-tx)}
+.pc.zero{background:transparent;color:#c0b9a8;font-weight:400}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
 .bd{border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600}
 #login{max-width:360px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px}
@@ -178,6 +198,21 @@ button.go:hover{background:#34503c}
       </div>
 
       <div class="badges" id="pBad"></div>
+
+      <div class="mc" style="margin-bottom:14px">
+        <div class="mh" style="margin-bottom:6px">
+          <div class="l" style="align-self:center">Récapitulatif pour le fournisseur</div>
+          <button class="b tools" id="copySup">Copier le message</button>
+        </div>
+        <div class="rtot" id="rTot">
+          <div class="all"><span class="l">Total à commander</span><b id="rTotAll">0</b></div>
+          <div class="g"><span class="l">Sein gauche</span><b id="rTotG">0</b></div>
+          <div class="d"><span class="l">Sein droit</span><b id="rTotD">0</b></div>
+        </div>
+        <div class="rgrid" id="rCards"></div>
+        <div class="empty" id="rEmpty" hidden>Rien à calculer pour le moment.</div>
+        <div class="st" id="rWarn" style="margin:8px 0 0"></div>
+      </div>
 
       <div class="box">
         <table>
@@ -648,7 +683,111 @@ function mastStats(){
     s.textContent=p+" : "+byProt[p];
     bad.appendChild(s);
   });
+  mastRecap();
 }
+
+var lastRecap={sizes:[],colors:[],data:{}};
+
+function mastRecap(){
+  var data={},used=[],warn=[];
+  mastFor().forEach(function(o){
+    var q=parseNum(o.qte)||0;
+    if(!q)return;
+    var sz=(o.tailles||"").trim().toUpperCase();
+    var cols=(o.couleurs||"").split(",").map(cleanName).filter(function(c){return c;});
+    var sides=o.protege==="Les deux"?["Gauche","Droit"]:(o.protege?[o.protege]:[]);
+    var name=(o.cliente||"").trim()||"(sans nom)";
+    if(!sz||!cols.length||!sides.length||q%cols.length){warn.push(name);return;}
+    var each=q/cols.length;
+    cols.forEach(function(c){
+      var k=ST_COLORS.filter(function(x){return x.toLowerCase()===c.toLowerCase();})[0]||c;
+      if(used.indexOf(k)<0)used.push(k);
+      data[sz]=data[sz]||{};
+      sides.forEach(function(sd){data[sz][k+"|"+sd]=(data[sz][k+"|"+sd]||0)+each;});
+    });
+  });
+  used.sort(function(a,b){
+    var ia=ST_COLORS.indexOf(a),ib=ST_COLORS.indexOf(b);
+    if(ia<0)ia=99;
+    if(ib<0)ib=99;
+    return ia!==ib?ia-ib:(a<b?-1:a>b?1:0);
+  });
+  var sizes=Object.keys(data).sort(sizeCmp);
+  lastRecap={sizes:sizes,colors:used,data:data};
+  var box=$("rCards");
+  box.innerHTML="";
+  $("rEmpty").hidden=sizes.length>0;
+  $("rTot").hidden=!sizes.length;
+  $("rWarn").textContent=warn.length?"À compléter ou à vérifier (taille, couleur, côté, ou pièces non réparties entre les couleurs) : "+warn.join(", "):"";
+  $("rWarn").className="st"+(warn.length?" err":"");
+  var SW={"Beige":"#d9c3a5","Rose":"#e8a0b4","Noir":"#2b2a26","Bleu":"#6f93c8"};
+  var gG=0,gD=0;
+  function el(tag,cls,txt){
+    var e=document.createElement(tag);
+    if(cls)e.className=cls;
+    if(txt!=null)e.textContent=txt;
+    return e;
+  }
+  sizes.forEach(function(sz){
+    var card=el("div","rcard");
+    var sG=0,sD=0;
+    var rows=el("div","");
+    used.forEach(function(c){
+      var g=data[sz][c+"|Gauche"]||0,d=data[sz][c+"|Droit"]||0;
+      if(!g&&!d)return;
+      sG+=g;sD+=d;
+      var r=el("div","rrow");
+      var sw=el("span","sw");
+      sw.style.background=SW[c]||"#b3ab98";
+      r.appendChild(sw);
+      r.appendChild(el("span","nm",c));
+      r.appendChild(el("span","pc pg"+(g?"":" zero"),"G "+g));
+      r.appendChild(el("span","pc pd"+(d?"":" zero"),"D "+d));
+      rows.appendChild(r);
+    });
+    var h=el("div","rh");
+    h.appendChild(el("span","rsz",sz));
+    h.appendChild(el("span","rn",(sG+sD)+(sG+sD>1?" pièces":" pièce")));
+    card.appendChild(h);
+    card.appendChild(rows);
+    box.appendChild(card);
+    gG+=sG;gD+=sD;
+  });
+  $("rTotG").textContent=gG;
+  $("rTotD").textContent=gD;
+  $("rTotAll").textContent=gG+gD;
+}
+
+function recapText(){
+  var r=lastRecap,out=["Commande soutiens mastectomie",""],gG=0,gD=0;
+  r.sizes.forEach(function(sz){
+    var sG=0,sD=0,lines=[];
+    r.colors.forEach(function(c){
+      var g=r.data[sz][c+"|Gauche"]||0,d=r.data[sz][c+"|Droit"]||0;
+      if(!g&&!d)return;
+      var parts=[];
+      if(g)parts.push(g+" gauche");
+      if(d)parts.push(d+" droit");
+      lines.push("- "+c+" : "+parts.join(", "));
+      sG+=g;sD+=d;
+    });
+    out.push("Taille "+sz+" ("+(sG+sD)+" pièces) :");
+    out=out.concat(lines);
+    out.push("");
+    gG+=sG;gD+=sD;
+  });
+  out.push("TOTAL : "+(gG+gD)+" pièces ("+gG+" gauche, "+gD+" droit)");
+  return out.join("\n");
+}
+
+$("copySup").addEventListener("click",function(){
+  var t=recapText();
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){setStatus("Message copié");},function(){prompt("Copie ce message :",t);});
+  }else{
+    prompt("Copie ce message :",t);
+  }
+});
 
 function sizeSelect(o){
   var s=document.createElement("select");
