@@ -99,6 +99,11 @@ button.go:hover{background:#34503c}
 .pc{border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;min-width:50px;text-align:center}
 .pg{background:var(--bl-bg);color:var(--bl-tx)}
 .pd{background:var(--ok-bg);color:var(--ok-tx)}
+.tc{min-width:26px;text-align:right;font-weight:600;font-size:15px}
+.rfoot{border-top:2px solid var(--line);margin-top:2px}
+.rfoot .nm{font-weight:600}
+.rfoot .pg{background:var(--bl-tx);color:#fff}
+.rfoot .pd{background:var(--ok-tx);color:#fff}
 .pc.zero{background:transparent;color:#c0b9a8;font-weight:400}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
 .bd{border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600}
@@ -741,10 +746,20 @@ function mastRecap(){
       sw.style.background=SW[c]||"#b3ab98";
       r.appendChild(sw);
       r.appendChild(el("span","nm",c));
+      r.appendChild(el("span","tc",String(g+d)));
       r.appendChild(el("span","pc pg"+(g?"":" zero"),"G "+g));
       r.appendChild(el("span","pc pd"+(d?"":" zero"),"D "+d));
       rows.appendChild(r);
     });
+    var f=el("div","rrow rfoot");
+    var sp=el("span","sw");
+    sp.style.visibility="hidden";
+    f.appendChild(sp);
+    f.appendChild(el("span","nm","Total"));
+    f.appendChild(el("span","tc",String(sG+sD)));
+    f.appendChild(el("span","pc pg","G "+sG));
+    f.appendChild(el("span","pc pd","D "+sD));
+    rows.appendChild(f);
     var h=el("div","rh");
     h.appendChild(el("span","rsz",sz));
     h.appendChild(el("span","rn",(sG+sD)+(sG+sD>1?" pièces":" pièce")));
