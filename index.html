@@ -209,14 +209,14 @@ button.go:hover{background:#34503c}
 
       <div class="mc" style="margin-bottom:14px">
         <div class="mh" style="margin-bottom:6px">
-          <div class="l" style="align-self:center">Récapitulatif pour le fournisseur</div>
+          <div class="l" style="align-self:center">Résumé pour le fournisseur (Supplier summary)</div>
           <button class="b tools" id="copySup">Copier le message</button>
         </div>
         <div class="rtot" id="rTot">
-          <div class="all"><span class="l">Total à commander</span><b id="rTotAll">0</b></div>
-          <div class="g"><span class="l">Sein gauche</span><b id="rTotG">0</b></div>
-          <div class="d"><span class="l">Sein droit</span><b id="rTotD">0</b></div>
-          <div class="b3" id="rBoxB" hidden><span class="l">Les deux seins</span><b id="rTotB">0</b></div>
+          <div class="all"><span class="l">Total to order</span><b id="rTotAll">0</b></div>
+          <div class="g"><span class="l">Left breast</span><b id="rTotG">0</b></div>
+          <div class="d"><span class="l">Right breast</span><b id="rTotD">0</b></div>
+          <div class="b3" id="rBoxB" hidden><span class="l">Both breasts</span><b id="rTotB">0</b></div>
         </div>
         <div class="rgrid" id="rCards"></div>
         <div class="empty" id="rEmpty" hidden>Rien à calculer pour le moment.</div>
@@ -744,9 +744,9 @@ function mastRecap(){
     var hasB=used.some(function(c){return data[sz][c+"|Les deux"];});
     var rows=el("div","");
     function pills(r,g,d,b){
-      r.appendChild(el("span","pc pg"+(g?"":" zero"),"G "+g));
-      r.appendChild(el("span","pc pd"+(d?"":" zero"),"D "+d));
-      if(hasB)r.appendChild(el("span","pc pb"+(b?"":" zero"),"G+D "+b));
+      r.appendChild(el("span","pc pg"+(g?"":" zero"),"Left "+g));
+      r.appendChild(el("span","pc pd"+(d?"":" zero"),"Right "+d));
+      if(hasB)r.appendChild(el("span","pc pb"+(b?"":" zero"),"Both "+b));
     }
     used.forEach(function(c){
       var g=data[sz][c+"|Gauche"]||0,d=data[sz][c+"|Droit"]||0,b=data[sz][c+"|Les deux"]||0;
@@ -772,7 +772,7 @@ function mastRecap(){
     var h=el("div","rh");
     h.appendChild(el("span","rsz",sz));
     var n=sG+sD+sB;
-    h.appendChild(el("span","rn",n+(n>1?" pièces":" pièce")));
+    h.appendChild(el("span","rn",n+(n>1?" pieces":" piece")));
     card.appendChild(h);
     card.appendChild(rows);
     box.appendChild(card);
@@ -786,27 +786,27 @@ function mastRecap(){
 }
 
 function recapText(){
-  var r=lastRecap,out=["Commande soutiens mastectomie",""],gG=0,gD=0,gB=0;
+  var r=lastRecap,out=["Mastectomy bras order",""],gG=0,gD=0,gB=0;
   r.sizes.forEach(function(sz){
     var sG=0,sD=0,sB=0,lines=[];
     r.colors.forEach(function(c){
       var g=r.data[sz][c+"|Gauche"]||0,d=r.data[sz][c+"|Droit"]||0,b=r.data[sz][c+"|Les deux"]||0;
       if(!g&&!d&&!b)return;
       var parts=[];
-      if(g)parts.push(g+" gauche");
-      if(d)parts.push(d+" droit");
-      if(b)parts.push(b+" pour les deux seins");
+      if(g)parts.push(g+" left");
+      if(d)parts.push(d+" right");
+      if(b)parts.push(b+" both breasts");
       lines.push("- "+c+" : "+parts.join(", "));
       sG+=g;sD+=d;sB+=b;
     });
-    out.push("Taille "+sz+" ("+(sG+sD+sB)+" pièces) :");
+    out.push("Size "+sz+" ("+(sG+sD+sB)+" pieces):");
     out=out.concat(lines);
     out.push("");
     gG+=sG;gD+=sD;gB+=sB;
   });
-  var tail=gG+" gauche, "+gD+" droit";
-  if(gB)tail+=", "+gB+" pour les deux seins";
-  out.push("TOTAL : "+(gG+gD+gB)+" pièces ("+tail+")");
+  var tail=gG+" left, "+gD+" right";
+  if(gB)tail+=", "+gB+" both breasts";
+  out.push("TOTAL: "+(gG+gD+gB)+" pieces ("+tail+")");
   return out.join("\n");
 }
 
