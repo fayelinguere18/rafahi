@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
+<meta name="google" content="notranslate">
 <title>Rafahi Boutique - Commandes</title>
 <style>
 :root{
@@ -209,15 +210,15 @@ button.go:hover{background:#34503c}
 
       <div class="mc" style="margin-bottom:14px">
         <div class="mh" style="margin-bottom:6px">
-          <div class="l" style="align-self:center">Résumé pour le fournisseur (Supplier summary)</div>
+          <div class="l" style="align-self:center">Supplier summary</div>
           <button class="b tools" id="copySup">Copier le message</button>
         </div>
         <div class="rtot" id="rTot">
-          <div class="all"><span class="l">Total to order</span><b id="rTotAll">0</b></div>
+          <div class="all"><span class="l">Pieces ordered</span><b id="rTotAll">0</b></div>
           <div class="g"><span class="l">Left breast</span><b id="rTotG">0</b></div>
           <div class="d"><span class="l">Right breast</span><b id="rTotD">0</b></div>
-          <div class="b3" id="rBoxB" hidden><span class="l">Both breasts</span><b id="rTotB">0</b></div>
         </div>
+        <div class="st" id="rNote" style="margin:-4px 0 10px"></div>
         <div class="rgrid" id="rCards"></div>
         <div class="empty" id="rEmpty" hidden>Rien à calculer pour le moment.</div>
         <div class="st" id="rWarn" style="margin:8px 0 0"></div>
@@ -696,8 +697,6 @@ function mastStats(){
 }
 
 var lastRecap={sizes:[],colors:[],data:{}};
-var EN_COL={"Beige":"Beige","Noir":"Black","Rose":"Pink","Bleu":"Blue","Léopard":"Leopard","Marron":"Brown","Gris":"Grey","Blanc":"White"};
-function enC(c){return EN_COL[c]||c;}
 
 function mastRecap(){
   var data={},used=[],warn=[];
@@ -731,6 +730,7 @@ function mastRecap(){
   $("rTot").hidden=!sizes.length;
   $("rWarn").textContent=warn.length?"À compléter ou à vérifier (taille, couleur, côté, ou pièces non réparties entre les couleurs) : "+warn.join(", "):"";
   $("rWarn").className="st"+(warn.length?" err":"");
+  var EN={"Beige":"Beige","Rose":"Pink","Noir":"Black","Bleu":"Blue","Léopard":"Leopard","Leopard":"Leopard"};
   var SW={"Beige":"#d9c3a5","Rose":"#e8a0b4","Noir":"#2b2a26","Bleu":"#6f93c8"};
   var gG=0,gD=0;
   function el(tag,cls,txt){
@@ -743,12 +743,10 @@ function mastRecap(){
   sizes.forEach(function(sz){
     var card=el("div","rcard");
     var sG=0,sD=0,sB=0;
-    var hasB=used.some(function(c){return data[sz][c+"|Les deux"];});
     var rows=el("div","");
-    function pills(r,g,d,b){
-      r.appendChild(el("span","pc pg"+(g?"":" zero"),"Left "+g));
-      r.appendChild(el("span","pc pd"+(d?"":" zero"),"Right "+d));
-      if(hasB)r.appendChild(el("span","pc pb"+(b?"":" zero"),"Both "+b));
+    function pills(r,left,right){
+      r.appendChild(el("span","pc pg"+(left?"":" zero"),"Left "+left));
+      r.appendChild(el("span","pc pd"+(right?"":" zero"),"Right "+right));
     }
     used.forEach(function(c){
       var g=data[sz][c+"|Gauche"]||0,d=data[sz][c+"|Droit"]||0,b=data[sz][c+"|Les deux"]||0;
@@ -758,9 +756,9 @@ function mastRecap(){
       var sw=el("span","sw");
       sw.style.background=SW[c]||"#b3ab98";
       r.appendChild(sw);
-      r.appendChild(el("span","nm",enC(c)));
+      r.appendChild(el("span","nm",EN[c]||c));
       r.appendChild(el("span","tc",String(g+d+b)));
-      pills(r,g,d,b);
+      pills(r,g+b,d+b);
       rows.appendChild(r);
     });
     var f=el("div","rrow rfoot");
@@ -769,7 +767,7 @@ function mastRecap(){
     f.appendChild(sp);
     f.appendChild(el("span","nm","Total"));
     f.appendChild(el("span","tc",String(sG+sD+sB)));
-    pills(f,sG,sD,sB);
+    pills(f,sG+sB,sD+sB);
     rows.appendChild(f);
     var h=el("div","rh");
     h.appendChild(el("span","rsz",sz));
@@ -780,35 +778,33 @@ function mastRecap(){
     box.appendChild(card);
     gG+=sG;gD+=sD;gB+=sB;
   });
-  $("rTotG").textContent=gG;
-  $("rTotD").textContent=gD;
-  $("rTotB").textContent=gB;
-  $("rBoxB").hidden=!gB;
+  $("rTotG").textContent=gG+gB;
+  $("rTotD").textContent=gD+gB;
   $("rTotAll").textContent=gG+gD+gB;
+  $("rNote").textContent=gB?gB+" \"Both\" piece"+(gB>1?"s are":" is")+" counted on both the left and the right.":"";
 }
 
 function recapText(){
-  var r=lastRecap,out=["Mastectomy bras order",""],gG=0,gD=0,gB=0;
+  var EN={"Beige":"Beige","Rose":"Pink","Noir":"Black","Bleu":"Blue","Léopard":"Leopard","Leopard":"Leopard"};
+  var r=lastRecap,out=["Mastectomy bra order",""],gG=0,gD=0,gB=0;
   r.sizes.forEach(function(sz){
     var sG=0,sD=0,sB=0,lines=[];
     r.colors.forEach(function(c){
       var g=r.data[sz][c+"|Gauche"]||0,d=r.data[sz][c+"|Droit"]||0,b=r.data[sz][c+"|Les deux"]||0;
       if(!g&&!d&&!b)return;
       var parts=[];
-      if(g)parts.push(g+" left");
-      if(d)parts.push(d+" right");
-      if(b)parts.push(b+" both breasts");
-      lines.push("- "+enC(c)+": "+parts.join(", "));
+      if(g+b)parts.push((g+b)+" left");
+      if(d+b)parts.push((d+b)+" right");
+      lines.push("- "+(EN[c]||c)+": "+parts.join(", "));
       sG+=g;sD+=d;sB+=b;
     });
-    out.push("Size "+sz+" ("+(sG+sD+sB)+" pieces):");
+    out.push("Size "+sz+":");
     out=out.concat(lines);
+    out.push("Total "+sz+": "+(sG+sB)+" left, "+(sD+sB)+" right");
     out.push("");
     gG+=sG;gD+=sD;gB+=sB;
   });
-  var tail=gG+" left, "+gD+" right";
-  if(gB)tail+=", "+gB+" both breasts";
-  out.push("TOTAL: "+(gG+gD+gB)+" pieces ("+tail+")");
+  out.push("TOTAL: "+(gG+gB)+" left, "+(gD+gB)+" right ("+(gG+gD+gB)+" pieces ordered)");
   return out.join("\n");
 }
 
