@@ -538,6 +538,39 @@ function dateInput(o,key,after){
   return di;
 }
 
+function informBtn(o){
+  var b=document.createElement("button");
+  b.type="button";
+  b.className="pill";
+  function paint(){
+    var on=!!o.informee;
+    b.textContent=on?"Informée":"Non informée";
+    var c=on?COL["Payé"]:COL["Non payé"];
+    b.style.background=c[0];
+    b.style.color=c[1];
+  }
+  b.addEventListener("click",function(){
+    save(o,{informee:!o.informee});
+    paint();
+  });
+  paint();
+  return b;
+}
+
+function moveBtn(o){
+  var b=document.createElement("button");
+  b.type="button";
+  b.className="b";
+  b.style.padding="3px 10px";
+  b.style.fontSize="12px";
+  b.textContent="→ À livrer";
+  b.addEventListener("click",function(){
+    save(o,{livraison:"À livrer"});
+    setTimeout(renderOrders,250);
+  });
+  return b;
+}
+
 function orderDelBtn(o){
   var x=document.createElement("button");
   x.type="button";
@@ -573,7 +606,8 @@ function row(o,rank,mode){
   cell(tr,pill(o,"paiement",PAY,false));
   if(mode==="avenir"){
     cell(tr,ed(o,"telephone","Téléphone"));
-    cell(tr,pill(o,"livraison",AV_LIST,true));
+    cell(tr,informBtn(o));
+    cell(tr,moveBtn(o));
   }else{
     cell(tr,pill(o,"livraison",LIV,true));
     cell(tr,ed(o,"adresse","Adresse"));
@@ -587,7 +621,7 @@ function row(o,rank,mode){
 
 function renderHead(){
   var cols=sub==="avenir"
-    ?["Ordre","Commandée le","Cliente","Tailles (prix)","Couleurs","Qté","Total","Paiement","Téléphone","Statut",""]
+    ?["Ordre","Commandée le","Cliente","Tailles (prix)","Couleurs","Qté","Total","Paiement","Téléphone","Informée","Livraison",""]
     :["Cliente","Tailles (prix)","Couleurs","Qté","Total","Paiement","Livraison","Adresse","Livrer le","Téléphone",""];
   var head=$("oHead");
   head.innerHTML="";
