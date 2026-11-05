@@ -607,6 +607,9 @@ function row(o,rank,mode){
   if(mode==="avenir"){
     cell(tr,ed(o,"telephone","Téléphone"));
     cell(tr,informBtn(o));
+    var mt=ed(o,"motif","Écrire le motif...",{multi:true});
+    mt.style.minWidth="170px";
+    cell(tr,mt);
     cell(tr,moveBtn(o));
   }else{
     cell(tr,pill(o,"livraison",LIV,true));
@@ -621,7 +624,7 @@ function row(o,rank,mode){
 
 function renderHead(){
   var cols=sub==="avenir"
-    ?["Ordre","Commandée le","Cliente","Tailles (prix)","Couleurs","Qté","Total","Paiement","Téléphone","Informée","Livraison",""]
+    ?["Ordre","Commandée le","Cliente","Tailles (prix)","Couleurs","Qté","Total","Paiement","Téléphone","Informée","Motif (si pas pris)","Livraison",""]
     :["Cliente","Tailles (prix)","Couleurs","Qté","Total","Paiement","Livraison","Adresse","Livrer le","Téléphone",""];
   var head=$("oHead");
   head.innerHTML="";
