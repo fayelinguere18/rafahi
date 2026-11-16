@@ -124,6 +124,19 @@ button.go:hover{background:#34503c}
 .fstep{flex:1;min-width:110px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:center}
 .fstep .s{font-size:11px;color:var(--muted)}
 .fstep .n{font-size:16px;font-weight:600}
+.tl{position:relative;padding-left:26px}
+.tl:before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.ev{position:relative;margin-bottom:12px}
+.dot{position:absolute;left:-26px;top:14px;width:18px;height:18px;border-radius:50%;border:3px solid var(--bg);background:var(--ne-tx)}
+.evc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.evh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.evh .ed{flex:1 1 160px;font-weight:600;font-size:15px}
+.pmini{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-top:10px}
+.pmini .k{font-size:12px;color:var(--muted)}
+.pmini .ed{font-weight:600;font-size:15px}
+.pmini .pv{font-weight:600;font-size:15px;padding:2px 0}
+.pnote{margin-top:8px;font-size:13px;color:var(--muted)}
+.pnote .ed{min-height:20px}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
 .bd{border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600}
 #login{max-width:360px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px}
@@ -160,6 +173,7 @@ button.go:hover{background:#34503c}
     <button data-v="orders" class="on">Commandes</button>
     <button data-v="stock">Stock</button>
     <button data-v="argent">Argent</button>
+    <button data-v="parcours">Parcours</button>
   </div>
 
   <div class="typebar" id="typebar">
@@ -301,6 +315,28 @@ button.go:hover{background:#34503c}
     <div class="bar"><span class="st" style="margin-left:0">Une dépense passée en « Payé » sort de la caisse toute seule. Un versement sur une dette aussi.</span></div>
   </div>
 
+  <div id="viewParcours" hidden>
+    <div class="cards c4">
+      <div class="mc"><div class="l">Arrivages</div><div class="v" id="jA">0</div></div>
+      <div class="mc"><div class="l">Pièces reçues</div><div class="v" id="jR">0</div></div>
+      <div class="mc"><div class="l">Pièces vendues</div><div class="v" id="jV">0</div></div>
+      <div class="mc"><div class="l">Encaissé au total</div><div class="v" id="jE">0</div></div>
+    </div>
+    <div class="seg" id="jSeg" style="margin-bottom:14px">
+      <button data-p="tout" class="on">Tout</button>
+      <button data-p="Arrivage">Arrivages</button>
+      <button data-p="Moment fort">Moments forts</button>
+      <button data-p="Jalon">Jalons</button>
+    </div>
+    <div class="empty" id="jEmpty" hidden>Ton carnet est vide. Ajoute ton premier arrivage, un moment fort ou un jalon.</div>
+    <div class="tl" id="jTl"></div>
+    <div class="bar tools">
+      <button class="b go" id="jAddA">+ Ajouter un arrivage</button>
+      <button class="b" id="jAddM">+ Ajouter un moment fort</button>
+      <button class="b" id="jAddJ">+ Ajouter un jalon</button>
+    </div>
+  </div>
+
   <div id="viewStock" hidden>
     <div class="cards">
       <div class="mc"><div class="l">Pièces en stock</div><div class="v" id="sT">0</div></div>
@@ -356,6 +392,11 @@ var COL={
   "Plus tard":["var(--ne-bg)","var(--ne-tx)"],
   "Commandé":["var(--wa-bg)","var(--wa-tx)"],
   "Fait":["var(--ok-bg)","var(--ok-tx)"],
+  "À venir":["var(--wa-bg)","var(--wa-tx)"],
+  "Écoulé":["var(--ok-bg)","var(--ok-tx)"],
+  "En cours":["var(--bl-bg)","var(--bl-tx)"],
+  "Moment fort":["var(--no-bg)","var(--no-tx)"],
+  "Jalon":["var(--bl-bg)","var(--bl-tx)"],
   "Gauche":["var(--bl-bg)","var(--bl-tx)"],
   "Droit":["var(--ok-bg)","var(--ok-tx)"],
   "Les deux":["var(--wa-bg)","var(--wa-tx)"]
@@ -374,6 +415,8 @@ var curType=store("get","rafahi_type")||DEFAULT_TYPE;
 var orders=[];
 var money=[];
 var ARGENT="Argent";
+var PARC="Parcours";
+var journey=[];
 var stock=[];
 var filter="tout";
 var sub=store("get","rafahi_sub")==="avenir"?"avenir":"livrer";
@@ -437,6 +480,7 @@ function logout(msg){
   code="";
   orders=[];
   money=[];
+  journey=[];
   stock=[];
   showApp(false);
   $("loginErr").textContent=msg||"";
@@ -468,8 +512,9 @@ function renderTypes(){
 }
 
 function setData(list){
-  orders=list.filter(function(o){return o.type!==ARGENT;});
+  orders=list.filter(function(o){return o.type!==ARGENT&&o.type!==PARC;});
   money=list.filter(function(o){return o.type===ARGENT;});
+  journey=list.filter(function(o){return o.type===PARC;});
 }
 
 function renderAll(){
@@ -477,6 +522,7 @@ function renderAll(){
   renderOrders();
   renderStock();
   renderMoney();
+  renderJourney();
 }
 
 function load(silent){
@@ -496,6 +542,7 @@ function save(o,patch){
   setStatus("Enregistrement...");
   Object.keys(patch).forEach(function(k){o[k]=patch[k];});
   if(o.type===ARGENT)moneyRefresh();
+  if(o.type===PARC)journeyRefresh();
   api("PATCH","/orders/"+o.id,patch).then(function(){
     setStatus("Enregistré");
     summary();
@@ -1077,7 +1124,9 @@ function gDelBtn(o){
     setStatus("Suppression...");
     api("DELETE","/orders/"+o.id).then(function(){
       money=money.filter(function(z){return z.id!==o.id;});
+      journey=journey.filter(function(z){return z.id!==o.id;});
       renderMoney();
+      renderJourney();
       setStatus("Supprimé");
     }).catch(function(e){setStatus("Erreur : "+e.message,true);});
   });
@@ -1207,6 +1256,158 @@ $("gBank").addEventListener("click",function(){
     renderMoney();
     setStatus("Enregistré");
   }).catch(function(e){setStatus("Erreur : "+e.message,true);renderMoney();});
+});
+
+/* ---------- Parcours ---------- */
+var pFilter="tout";
+var pUpd={};
+function jr(r){return journey.filter(function(o){return o.rubrique===r;});}
+function pNum(o,k){return parseNum(o[k])||0;}
+
+function journeyRefresh(){
+  var a=jr("Arrivage"),rec=0,ven=0,enc=0;
+  a.forEach(function(o){rec+=pNum(o,"qte");ven+=pNum(o,"regle");enc+=pNum(o,"total");});
+  $("jA").textContent=a.length;
+  $("jR").textContent=fmt(rec)||"0";
+  $("jV").textContent=fmt(ven)||"0";
+  $("jE").textContent=fmt(enc)||"0";
+  Object.keys(pUpd).forEach(function(k){pUpd[k]();});
+}
+
+function pDate(o){
+  var di=document.createElement("input");
+  di.type="date";
+  di.value=o.dateCommande||"";
+  di.addEventListener("change",function(){
+    save(o,{dateCommande:di.value});
+    setTimeout(renderJourney,250);
+  });
+  return di;
+}
+
+function pPill(){
+  var st=document.createElement("span");
+  st.className="pill";
+  st.style.cursor="default";
+  return st;
+}
+
+function pArrivage(o,dot){
+  var card=gDiv("evc");
+  var h=gDiv("evh");
+  h.appendChild(ed(o,"cliente","Arrivage n°",{bold:true}));
+  h.appendChild(pDate(o));
+  var st=pPill();
+  h.appendChild(st);
+  h.appendChild(gDelBtn(o));
+  card.appendChild(h);
+  var mini=gDiv("pmini");
+  function box(label,node){
+    var d=document.createElement("div");
+    var k=gDiv("k");
+    k.textContent=label;
+    d.appendChild(k);
+    d.appendChild(node);
+    mini.appendChild(d);
+  }
+  box("Pièces reçues",ed(o,"qte","0",{num:true}));
+  box("Vendues",ed(o,"regle","0",{num:true}));
+  var rest=gDiv("pv");
+  box("Restantes",rest);
+  box("Encaissé",ed(o,"total","0",{num:true}));
+  box("Frais",ed(o,"frais","0",{num:true}));
+  card.appendChild(mini);
+  var bar=gDiv("pbar");
+  bar.style.marginTop="10px";
+  var fill=document.createElement("i");
+  bar.appendChild(fill);
+  card.appendChild(bar);
+  var note=gDiv("pnote");
+  note.appendChild(ed(o,"note","Notes (facultatif)",{multi:true}));
+  card.appendChild(note);
+  function upd(){
+    var rec=pNum(o,"qte"),ven=pNum(o,"regle");
+    rest.textContent=fmt(Math.max(0,rec-ven))||"0";
+    fill.style.width=(rec?Math.min(100,ven/rec*100):0)+"%";
+    var s;
+    if((o.dateCommande||"")>todayStr())s="À venir";
+    else if(rec>0&&ven>=rec)s="Écoulé";
+    else s="En cours";
+    st.textContent=s;
+    var c=COL[s];
+    st.style.background=c[0];
+    st.style.color=c[1];
+    dot.style.background=c[1];
+  }
+  pUpd[o.id]=upd;
+  upd();
+  return card;
+}
+
+function pSimple(o,dot){
+  var card=gDiv("evc");
+  var h=gDiv("evh");
+  h.appendChild(ed(o,"cliente","Titre",{bold:true}));
+  h.appendChild(pDate(o));
+  var st=pPill();
+  st.textContent=o.rubrique;
+  var c=COL[o.rubrique]||COL["Jalon"];
+  st.style.background=c[0];
+  st.style.color=c[1];
+  dot.style.background=c[1];
+  h.appendChild(st);
+  h.appendChild(gDelBtn(o));
+  card.appendChild(h);
+  var note=gDiv("pnote");
+  note.appendChild(ed(o,"note","Raconte ce qui s'est passé...",{multi:true}));
+  card.appendChild(note);
+  return card;
+}
+
+function renderJourney(){
+  pUpd={};
+  Array.prototype.forEach.call($("jSeg").children,function(b){b.className=b.getAttribute("data-p")===pFilter?"on":"";});
+  var list=journey.filter(function(o){return pFilter==="tout"||o.rubrique===pFilter;}).sort(function(a,b){
+    var da=a.dateCommande||"",db=b.dateCommande||"";
+    if(da!==db)return da<db?1:-1;
+    return -byNew(a,b);
+  });
+  var box=$("jTl");
+  box.innerHTML="";
+  list.forEach(function(o){
+    var ev=gDiv("ev");
+    var dot=gDiv("dot");
+    ev.appendChild(dot);
+    ev.appendChild(o.rubrique==="Arrivage"?pArrivage(o,dot):pSimple(o,dot));
+    box.appendChild(ev);
+  });
+  $("jEmpty").hidden=list.length>0;
+  box.hidden=list.length===0;
+  journeyRefresh();
+}
+
+function jAdd(rubrique,extra){
+  setStatus("Ajout...");
+  var title=rubrique==="Arrivage"?"Arrivage n°"+(jr("Arrivage").length+1):"";
+  api("POST","/orders",mix({cliente:title,type:PARC,rubrique:rubrique,dateCommande:todayStr()},extra)).then(function(d){
+    journey.push(d.order);
+    if(pFilter!=="tout"&&pFilter!==rubrique)pFilter="tout";
+    renderJourney();
+    setStatus("Ligne ajoutée");
+    if(rubrique!=="Arrivage"){
+      var l=Array.prototype.filter.call($("jTl").querySelectorAll(".ed"),function(e){return e.textContent==="";});
+      if(l.length)l[0].focus();
+    }
+  }).catch(function(e){setStatus("Erreur : "+e.message,true);});
+}
+$("jAddA").addEventListener("click",function(){jAdd("Arrivage",{qte:0,regle:0,total:0,frais:0});});
+$("jAddM").addEventListener("click",function(){jAdd("Moment fort",{});});
+$("jAddJ").addEventListener("click",function(){jAdd("Jalon",{});});
+$("jSeg").addEventListener("click",function(e){
+  var b=e.target.closest("button");
+  if(!b)return;
+  pFilter=b.getAttribute("data-p");
+  renderJourney();
 });
 
 /* ---------- Stock ---------- */
@@ -1704,7 +1905,8 @@ $("tabs").addEventListener("click",function(e){
   $("viewOrders").hidden=view!=="orders";
   $("viewStock").hidden=view!=="stock";
   $("viewArgent").hidden=view!=="argent";
-  $("typebar").hidden=view==="argent";
+  $("viewParcours").hidden=view!=="parcours";
+  $("typebar").hidden=view==="argent"||view==="parcours";
   if(view==="stock")loadStock(false);
 });
 
