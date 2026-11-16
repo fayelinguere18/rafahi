@@ -109,6 +109,21 @@ button.go:hover{background:#34503c}
 .pb{background:var(--wa-bg);color:var(--wa-tx)}
 .rfoot .pb{background:var(--wa-tx);color:#fff}
 .pc.zero{background:transparent;color:#c0b9a8;font-weight:400}
+.cards.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:640px){.cards.c4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:10px;margin-bottom:14px}
+.gh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px}
+.gh b{font-size:14px;font-weight:600}
+.grow{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.grow .ed{flex:1 1 120px}
+.grow .gnum{flex:0 0 90px;text-align:right;font-weight:600}
+.gsum{display:flex;justify-content:space-between;padding-top:8px;border-top:2px solid var(--line);font-weight:600;font-size:13px;margin-top:2px}
+.pbar{height:6px;border-radius:3px;background:var(--ne-bg);overflow:hidden}
+.pbar i{display:block;height:6px;background:var(--ok-tx)}
+.flow{display:flex;gap:6px;flex-wrap:wrap}
+.fstep{flex:1;min-width:110px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:center}
+.fstep .s{font-size:11px;color:var(--muted)}
+.fstep .n{font-size:16px;font-weight:600}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
 .bd{border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600}
 #login{max-width:360px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px}
@@ -144,9 +159,10 @@ button.go:hover{background:#34503c}
   <div class="seg tabs tools" id="tabs">
     <button data-v="orders" class="on">Commandes</button>
     <button data-v="stock">Stock</button>
+    <button data-v="argent">Argent</button>
   </div>
 
-  <div class="typebar">
+  <div class="typebar" id="typebar">
     <div class="seg" id="types"></div>
     <button class="b tools" id="addType">+ Ajouter un type</button>
   </div>
@@ -244,6 +260,47 @@ button.go:hover{background:#34503c}
     </div>
   </div>
 
+  <div id="viewArgent" hidden>
+    <div class="cards c4">
+      <div class="mc"><div class="l">En caisse</div><div class="v" id="gCaisse">0</div></div>
+      <div class="mc"><div class="l">À la banque</div><div class="v" id="gBanque">0</div></div>
+      <div class="mc"><div class="l">Dettes restantes</div><div class="v" id="gDettes" style="color:var(--no-tx)">0</div></div>
+      <div class="mc"><div class="l">Projets prévus</div><div class="v" id="gProjets">0</div></div>
+    </div>
+
+    <div class="mc" style="margin-bottom:14px">
+      <div class="gh"><b>Simulation : si on fait tout dans l'ordre</b><span class="st" style="margin-left:0">dépenses prévues et projets prioritaires</span></div>
+      <div class="flow" id="gSim"></div>
+    </div>
+
+    <div class="agrid">
+      <div class="mc">
+        <div class="gh"><b>Dépenses à payer</b></div>
+        <div id="gDepL"></div>
+        <div class="gsum"><span id="gDepT"></span></div>
+        <div class="bar tools" style="margin:8px 0 0"><button class="b" id="gDepAdd">+ Ajouter une dépense</button></div>
+      </div>
+      <div class="mc">
+        <div class="gh"><b>Dettes</b></div>
+        <div id="gDetL"></div>
+        <div class="gsum"><span id="gDetT"></span></div>
+        <div class="bar tools" style="margin:8px 0 0"><button class="b" id="gDetAdd">+ Ajouter une dette</button></div>
+      </div>
+      <div class="mc">
+        <div class="gh"><b>Projets</b></div>
+        <div id="gProjL"></div>
+        <div class="bar tools" style="margin:8px 0 0"><button class="b" id="gProjAdd">+ Ajouter un projet</button></div>
+      </div>
+      <div class="mc">
+        <div class="gh"><b>Entrées et sorties</b></div>
+        <div class="empty" id="gHint" hidden>Commence par « + Ajouter un mouvement » : écris ton solde de départ (par exemple 411 000) en Entrée, compte Caisse.</div>
+        <div id="gMovL" style="max-height:360px;overflow-y:auto"></div>
+        <div class="bar tools" style="margin:8px 0 0"><button class="b go" id="gMovAdd">+ Ajouter un mouvement</button><button class="b" id="gBank">→ Mettre à la banque</button></div>
+      </div>
+    </div>
+    <div class="bar"><span class="st" style="margin-left:0">Une dépense passée en « Payé » sort de la caisse toute seule. Un versement sur une dette aussi.</span></div>
+  </div>
+
   <div id="viewStock" hidden>
     <div class="cards">
       <div class="mc"><div class="l">Pièces en stock</div><div class="v" id="sT">0</div></div>
@@ -290,6 +347,15 @@ var COL={
   "Livrée":["var(--ne-bg)","var(--ne-tx)"],
   "Reportée":["var(--bl-bg)","var(--bl-tx)"],
   "Commande à venir":["var(--sage-soft)","var(--sage-dark)"],
+  "Prévu":["var(--wa-bg)","var(--wa-tx)"],
+  "Entrée":["var(--ok-bg)","var(--ok-tx)"],
+  "Sortie":["var(--no-bg)","var(--no-tx)"],
+  "Caisse":["var(--ne-bg)","var(--ne-tx)"],
+  "Banque":["var(--bl-bg)","var(--bl-tx)"],
+  "Prioritaire":["var(--no-bg)","var(--no-tx)"],
+  "Plus tard":["var(--ne-bg)","var(--ne-tx)"],
+  "Commandé":["var(--wa-bg)","var(--wa-tx)"],
+  "Fait":["var(--ok-bg)","var(--ok-tx)"],
   "Gauche":["var(--bl-bg)","var(--bl-tx)"],
   "Droit":["var(--ok-bg)","var(--ok-tx)"],
   "Les deux":["var(--wa-bg)","var(--wa-tx)"]
@@ -306,6 +372,8 @@ function store(op,k,v){
 var code=store("get","rafahi_code")||"";
 var curType=store("get","rafahi_type")||DEFAULT_TYPE;
 var orders=[];
+var money=[];
+var ARGENT="Argent";
 var stock=[];
 var filter="tout";
 var sub=store("get","rafahi_sub")==="avenir"?"avenir":"livrer";
@@ -368,6 +436,7 @@ function logout(msg){
   store("del","rafahi_code");
   code="";
   orders=[];
+  money=[];
   stock=[];
   showApp(false);
   $("loginErr").textContent=msg||"";
@@ -398,16 +467,22 @@ function renderTypes(){
   });
 }
 
+function setData(list){
+  orders=list.filter(function(o){return o.type!==ARGENT;});
+  money=list.filter(function(o){return o.type===ARGENT;});
+}
+
 function renderAll(){
   renderTypes();
   renderOrders();
   renderStock();
+  renderMoney();
 }
 
 function load(silent){
   if(!silent)setStatus("Chargement...");
   return api("GET","/orders").then(function(d){
-    orders=d.orders;
+    setData(d.orders);
     showApp(true);
     renderAll();
     setStatus("À jour");
@@ -420,6 +495,7 @@ function load(silent){
 function save(o,patch){
   setStatus("Enregistrement...");
   Object.keys(patch).forEach(function(k){o[k]=patch[k];});
+  if(o.type===ARGENT)moneyRefresh();
   api("PATCH","/orders/"+o.id,patch).then(function(){
     setStatus("Enregistré");
     summary();
@@ -927,6 +1003,212 @@ function renderMast(){
   mastStats();
 }
 
+/* ---------- Argent ---------- */
+var dUpd={};
+function mon(r){return money.filter(function(o){return o.rubrique===r;});}
+function amt(o){return parseNum(o.total)||0;}
+function reg(o){return parseNum(o.regle)||0;}
+function byNew(a,b){var ca=a.cree||"",cb=b.cree||"";return ca<cb?-1:ca>cb?1:0;}
+function mix(a,b){var o={};Object.keys(a).forEach(function(k){o[k]=a[k];});Object.keys(b).forEach(function(k){o[k]=b[k];});return o;}
+
+function moneyTotals(){
+  var caisse=0,banque=0,prev=0,dettes=0,proj=0,prio=0;
+  mon("Mouvement").forEach(function(o){
+    var v=(o.statut==="Sortie"?-1:1)*amt(o);
+    if(o.compte==="Banque")banque+=v;else caisse+=v;
+  });
+  mon("Dépense").forEach(function(o){
+    if(o.statut==="Payé")caisse-=amt(o);else prev+=amt(o);
+  });
+  mon("Dette").forEach(function(o){dettes+=Math.max(0,amt(o)-reg(o));});
+  mon("Projet").forEach(function(o){
+    if(o.statut==="Prioritaire"){prio+=amt(o);proj+=amt(o);}
+    else if(o.statut==="Plus tard"||!o.statut)proj+=amt(o);
+  });
+  return {caisse:caisse,banque:banque,prev:prev,dettes:dettes,proj:proj,prio:prio};
+}
+
+function setV(id,v){$(id).textContent=fmt(v)||"0";}
+function signed(v){return v<0?"\u2212 "+fmt(-v):(fmt(v)||"0");}
+
+function fstep(label,val,color,bg){
+  var d=document.createElement("div");
+  d.className="fstep";
+  if(bg){d.style.background=bg;d.style.borderColor="transparent";}
+  var s=document.createElement("div");
+  s.className="s";
+  s.textContent=label;
+  if(color)s.style.color=color;
+  var n=document.createElement("div");
+  n.className="n";
+  n.textContent=signed(val);
+  if(color)n.style.color=color;
+  d.appendChild(s);d.appendChild(n);
+  return d;
+}
+
+function moneyRefresh(){
+  var t=moneyTotals();
+  setV("gCaisse",t.caisse);
+  setV("gBanque",t.banque);
+  setV("gDettes",t.dettes);
+  setV("gProjets",t.proj);
+  $("gCaisse").style.color=t.caisse<0?"var(--no-tx)":"";
+  $("gDepT").textContent="Reste à payer : "+(fmt(t.prev)||"0");
+  $("gDetT").textContent="Reste à rembourser : "+(fmt(t.dettes)||"0");
+  var box=$("gSim");
+  box.innerHTML="";
+  var reste=t.caisse-t.prev-t.prio;
+  box.appendChild(fstep("Caisse",t.caisse));
+  box.appendChild(fstep("Dépenses prévues",-t.prev,"var(--no-tx)"));
+  box.appendChild(fstep("Projets prioritaires",-t.prio,"var(--no-tx)"));
+  box.appendChild(reste<0?fstep("Il manque",reste,"var(--no-tx)","var(--no-bg)"):fstep("Reste",reste,"var(--ok-tx)","var(--ok-bg)"));
+  Object.keys(dUpd).forEach(function(k){dUpd[k]();});
+}
+
+function gDelBtn(o){
+  var x=document.createElement("button");
+  x.type="button";
+  x.className="xb xcol";
+  x.textContent="\u00d7";
+  x.setAttribute("aria-label","Supprimer la ligne");
+  x.addEventListener("click",function(){
+    if(!confirm("Supprimer cette ligne ?"))return;
+    setStatus("Suppression...");
+    api("DELETE","/orders/"+o.id).then(function(){
+      money=money.filter(function(z){return z.id!==o.id;});
+      renderMoney();
+      setStatus("Supprimé");
+    }).catch(function(e){setStatus("Erreur : "+e.message,true);});
+  });
+  return x;
+}
+
+function gDiv(cls){var d=document.createElement("div");d.className=cls;return d;}
+function gNum(o,key){
+  var m=ed(o,key,"0",{num:true});
+  m.className+=" gnum";
+  return m;
+}
+
+function gSimpleRow(o,list){
+  var r=gDiv("grow");
+  r.appendChild(ed(o,"cliente","Libellé",{bold:true}));
+  r.appendChild(gNum(o,"total"));
+  r.appendChild(pill(o,"statut",list,false));
+  r.appendChild(gDelBtn(o));
+  return r;
+}
+
+function gMov(o){
+  var r=gDiv("grow");
+  r.appendChild(dateInput(o,"dateCommande",false));
+  r.appendChild(ed(o,"cliente","Libellé"));
+  r.appendChild(gNum(o,"total"));
+  r.appendChild(pill(o,"statut",["Entrée","Sortie"],false));
+  r.appendChild(pill(o,"compte",["Caisse","Banque"],false));
+  r.appendChild(gDelBtn(o));
+  return r;
+}
+
+function gDette(o){
+  var w=gDiv("");
+  w.style.borderTop="1px solid var(--line)";
+  w.style.padding="7px 0";
+  var top=gDiv("grow");
+  top.style.borderTop="none";
+  top.style.paddingBottom="4px";
+  top.appendChild(ed(o,"cliente","Qui ?",{bold:true}));
+  top.appendChild(gNum(o,"total"));
+  top.appendChild(gDelBtn(o));
+  var bar=gDiv("pbar");
+  var fill=document.createElement("i");
+  bar.appendChild(fill);
+  var bot=gDiv("grow");
+  bot.style.borderTop="none";
+  var lab=document.createElement("span");
+  lab.textContent="Remboursé";
+  lab.style.cssText="font-size:12px;color:var(--muted)";
+  var rg=gNum(o,"regle");
+  rg.style.flex="0 0 80px";
+  var rest=document.createElement("span");
+  rest.style.cssText="font-size:12px;font-weight:600;margin-left:auto";
+  var btn=document.createElement("button");
+  btn.type="button";
+  btn.className="b tools";
+  btn.style.cssText="padding:3px 10px;font-size:12px";
+  btn.textContent="+ Verser";
+  btn.addEventListener("click",function(){
+    var v=parseNum(prompt("Montant versé à "+(o.cliente||"cette personne")+" ?"));
+    if(!v||v<=0)return;
+    setStatus("Enregistrement...");
+    save(o,{regle:reg(o)+v});
+    api("POST","/orders",{cliente:"Remboursement : "+(o.cliente||"dette"),type:ARGENT,rubrique:"Mouvement",statut:"Sortie",compte:"Caisse",total:v,dateCommande:todayStr()}).then(function(d){
+      money.push(d.order);
+      renderMoney();
+      setStatus("Versement enregistré");
+    }).catch(function(e){setStatus("Erreur : "+e.message,true);});
+  });
+  bot.appendChild(lab);bot.appendChild(rg);bot.appendChild(rest);bot.appendChild(btn);
+  function upd(){
+    var t=amt(o),r=reg(o);
+    fill.style.width=(t?Math.min(100,r/t*100):0)+"%";
+    rest.textContent="Reste "+(fmt(Math.max(0,t-r))||"0");
+  }
+  dUpd[o.id]=upd;
+  upd();
+  w.appendChild(top);w.appendChild(bar);w.appendChild(bot);
+  return w;
+}
+
+function renderMoney(){
+  dUpd={};
+  function fill(id,list,fn){
+    var box=$(id);
+    box.innerHTML="";
+    list.forEach(function(o){box.appendChild(fn(o));});
+  }
+  fill("gDepL",mon("Dépense").sort(byNew),function(o){return gSimpleRow(o,["Prévu","Payé"]);});
+  fill("gDetL",mon("Dette").sort(byNew),gDette);
+  fill("gProjL",mon("Projet").sort(byNew),function(o){return gSimpleRow(o,["Prioritaire","Plus tard","Commandé","Fait"]);});
+  fill("gMovL",mon("Mouvement").sort(function(a,b){
+    var da=a.dateCommande||"",db=b.dateCommande||"";
+    if(da!==db)return da<db?1:-1;
+    return -byNew(a,b);
+  }),gMov);
+  $("gHint").hidden=money.length>0;
+  moneyRefresh();
+}
+
+function gAdd(rubrique,extra,listId,newestFirst){
+  setStatus("Ajout...");
+  api("POST","/orders",mix({cliente:"",type:ARGENT,rubrique:rubrique,total:0,dateCommande:todayStr()},extra)).then(function(d){
+    money.push(d.order);
+    renderMoney();
+    setStatus("Ligne ajoutée");
+    var list=Array.prototype.filter.call($(listId).querySelectorAll(".ed"),function(e){return e.textContent===""&&e.getAttribute("data-ph")!=="0";});
+    if(list.length)(newestFirst?list[0]:list[list.length-1]).focus();
+  }).catch(function(e){setStatus("Erreur : "+e.message,true);});
+}
+$("gDepAdd").addEventListener("click",function(){gAdd("Dépense",{statut:"Prévu"},"gDepL",false);});
+$("gDetAdd").addEventListener("click",function(){gAdd("Dette",{regle:0},"gDetL",false);});
+$("gProjAdd").addEventListener("click",function(){gAdd("Projet",{statut:"Prioritaire"},"gProjL",false);});
+$("gMovAdd").addEventListener("click",function(){gAdd("Mouvement",{statut:"Entrée",compte:"Caisse"},"gMovL",true);});
+$("gBank").addEventListener("click",function(){
+  var v=parseNum(prompt("Montant à mettre à la banque ?"));
+  if(!v||v<=0)return;
+  setStatus("Enregistrement...");
+  var base={type:ARGENT,rubrique:"Mouvement",total:v,dateCommande:todayStr(),cliente:"Mise à la banque"};
+  api("POST","/orders",mix(base,{statut:"Sortie",compte:"Caisse"})).then(function(d){
+    money.push(d.order);
+    return api("POST","/orders",mix(base,{statut:"Entrée",compte:"Banque"}));
+  }).then(function(d){
+    money.push(d.order);
+    renderMoney();
+    setStatus("Enregistré");
+  }).catch(function(e){setStatus("Erreur : "+e.message,true);renderMoney();});
+});
+
 /* ---------- Stock ---------- */
 function sizeCmp(a,b){
   var ia=SIZES.indexOf(a),ib=SIZES.indexOf(b);
@@ -1344,7 +1626,7 @@ $("loginBtn").addEventListener("click",function(){
   $("loginErr").textContent="";
   api("GET","/orders").then(function(d){
     store("set","rafahi_code",code);
-    orders=d.orders;
+    setData(d.orders);
     $("code").value="";
     showApp(true);
     renderAll();
@@ -1421,6 +1703,8 @@ $("tabs").addEventListener("click",function(e){
   Array.prototype.forEach.call($("tabs").children,function(x){x.className=x===b?"on":"";});
   $("viewOrders").hidden=view!=="orders";
   $("viewStock").hidden=view!=="stock";
+  $("viewArgent").hidden=view!=="argent";
+  $("typebar").hidden=view==="argent";
   if(view==="stock")loadStock(false);
 });
 
