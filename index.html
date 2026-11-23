@@ -137,6 +137,12 @@ button.go:hover{background:#34503c}
 .pmini .pv{font-weight:600;font-size:15px;padding:2px 0}
 .pnote{margin-top:8px;font-size:13px;color:var(--muted)}
 .pnote .ed{min-height:20px}
+.cards.c5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (max-width:900px){.cards.c5{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.cards.c5{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.arrbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.arrbar select{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 10px;font:inherit;font-weight:600;cursor:pointer}
+.arrbar input[type=date]{border:1px solid var(--line);background:#fff}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
 .bd{border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600}
 #login{max-width:360px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px}
@@ -184,15 +190,31 @@ button.go:hover{background:#34503c}
   <div id="viewOrders">
 
     <div id="viewNormal">
+      <div class="mc" style="margin-bottom:12px">
+        <div class="arrbar">
+          <select id="arrSel" aria-label="Choisir l'arrivage"></select>
+          <span style="font-size:13px;color:var(--muted)">Date d'arrivée</span>
+          <input type="date" id="arrDate">
+          <button class="b go tools" id="arrNewBtn" style="margin-left:auto">+ Nouvel arrivage</button>
+        </div>
+        <div class="arrbar tools" id="arrNew" hidden style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+          <span style="font-size:13px">Date du nouvel arrivage</span>
+          <input type="date" id="arrNewDate">
+          <button class="b go" id="arrNewOk">Créer l'arrivage</button>
+          <button class="b" id="arrNewNo">Annuler</button>
+          <span class="st" style="margin-left:0;flex-basis:100%">Les clientes déjà livrées restent dans l'arrivage précédent. Celles qui attendent passent dans le nouvel arrivage.</span>
+        </div>
+      </div>
       <div class="seg tabs" id="sub">
         <button data-s="livrer" class="on">À livrer</button>
         <button data-s="avenir">Commandes à venir</button>
       </div>
-      <div class="cards c4">
+      <div class="cards c5">
         <div class="mc"><div class="l" id="lA">Clientes à livrer</div><div class="v" id="mA">0</div></div>
         <div class="mc"><div class="l" id="lB">Articles à livrer</div><div class="v" id="mB">0</div></div>
         <div class="mc"><div class="l" id="lC">À encaisser</div><div class="v" id="mC">0</div></div>
         <div class="mc"><div class="l" id="lD">Déjà encaissé (payé)</div><div class="v" id="mD" style="color:var(--ok-tx)">0</div></div>
+        <div class="mc"><div class="l" id="lE">Clientes payées</div><div class="v" id="mE">0</div></div>
       </div>
 
       <div class="bar tools">
@@ -553,6 +575,42 @@ function save(o,patch){
 }
 
 function grp(o){return o.livraison==="À livrer"?0:o.livraison==="Reportée"?1:2;}
+var viewArr=0;
+function curArr(){
+  var m=1;
+  journey.forEach(function(j){
+    if(j.rubrique==="Arrivage"){var k=parseNum(j.numero)||0;if(k>m)m=k;}
+  });
+  orders.forEach(function(o){var k=parseNum(o.arrivage)||0;if(k>m)m=k;});
+  return m;
+}
+function vArr(){var c=curArr();return viewArr&&viewArr<=c?viewArr:c;}
+function inArr(o,n){
+  if(o.livraison==="Livrée")return (parseNum(o.arrivage)||1)===n;
+  return n===curArr();
+}
+function arrRow(n){
+  var r=null;
+  journey.forEach(function(j){if(j.rubrique==="Arrivage"&&(parseNum(j.numero)||0)===n)r=j;});
+  return r;
+}
+function shortDate(d){
+  return d?new Date(d+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):"";
+}
+function renderArrBar(){
+  var c=curArr(),v=vArr(),sel=$("arrSel");
+  sel.innerHTML="";
+  for(var n=c;n>=1;n--){
+    var r=arrRow(n);
+    var op=document.createElement("option");
+    op.value=String(n);
+    op.textContent="Arrivage n°"+n+(r&&r.dateCommande?" · "+shortDate(r.dateCommande):"")+(n===c?" (en cours)":"");
+    sel.appendChild(op);
+  }
+  sel.value=String(v);
+  var cur=arrRow(v);
+  $("arrDate").value=cur&&cur.dateCommande?cur.dateCommande:"";
+}
 function ordersFor(t){
   return orders.filter(function(o){return typeOf(o)===t;}).sort(function(a,b){
     var ga=grp(a),gb=grp(b);
@@ -563,6 +621,7 @@ function ordersFor(t){
     return ca<cb?-1:ca>cb?1:0;
   });
 }
+function ordersView(t){return ordersFor(t).filter(function(o){return inArr(o,vArr());});}
 function visible(o){
   if(filter==="jour")return o.date===todayStr()&&o.livraison!=="Livrée";
   if(filter==="impayees")return o.paiement==="Non payé";
@@ -571,13 +630,13 @@ function visible(o){
 
 function summary(){
   if(isMast()){mastStats();return;}
-  var art=0,enc=0,nb=0,paid=0;
+  var art=0,enc=0,nb=0,paid=0,paidN=0;
   var av=sub==="avenir";
   $("lA").textContent=av?"Clientes en attente":"Clientes à livrer";
   $("lB").textContent=av?"Articles commandés":"Articles à livrer";
   $("lC").textContent=av?"Total des commandes":"À encaisser";
-  ordersFor(curType).forEach(function(o){
-    if(o.paiement==="Payé"&&((o.livraison===AV)===av))paid+=parseNum(o.total)||0;
+  ordersView(curType).forEach(function(o){
+    if(o.paiement==="Payé"&&((o.livraison===AV)===av)){paid+=parseNum(o.total)||0;paidN++;}
     if(av){
       if(o.livraison===AV){nb++;art+=parseNum(o.qte)||0;enc+=parseNum(o.total)||0;}
       return;
@@ -589,6 +648,7 @@ function summary(){
   $("mB").textContent=art;
   $("mC").textContent=fmt(enc)||"0";
   $("mD").textContent=fmt(paid)||"0";
+  $("mE").textContent=paidN;
 }
 
 function ed(o,key,ph,opts){
@@ -635,6 +695,7 @@ function pill(o,key,list,after){
     var i=list.indexOf(o[key]);
     var p={};
     p[key]=list[(i+1)%list.length];
+    if(key==="livraison"&&p[key]==="Livrée")p.arrivage=curArr();
     save(o,p);
     paint();
     if(after)setTimeout(renderOrders,250);
@@ -770,12 +831,13 @@ function renderOrders(){
   $("viewNormal").hidden=m;
   $("viewMast").hidden=!m;
   if(m){renderMast();return;}
+  renderArrBar();
   Array.prototype.forEach.call($("sub").children,function(x){x.className=x.getAttribute("data-s")===sub?"on":"";});
   $("seg").hidden=sub==="avenir";
   renderHead();
   var body=$("body");
   body.innerHTML="";
-  var all=ordersFor(curType);
+  var all=ordersView(curType);
   var list;
   if(sub==="avenir"){
     list=all.filter(function(o){return o.livraison===AV;});
@@ -1856,6 +1918,7 @@ $("add").addEventListener("click",function(){
   setStatus("Ajout...");
   api("POST","/orders",{cliente:"",paiement:"Non payé",livraison:sub==="avenir"?AV:"À livrer",type:curType,dateCommande:todayStr()}).then(function(d){
     orders.push(d.order);
+    viewArr=0;
     if(filter!=="tout"){
       filter="tout";
       Array.prototype.forEach.call($("seg").children,function(x){x.className=x.getAttribute("data-f")==="tout"?"on":"";});
@@ -1890,6 +1953,46 @@ $("sub").addEventListener("click",function(e){
   sub=b.getAttribute("data-s");
   store("set","rafahi_sub",sub);
   renderOrders();
+});
+
+
+$("arrSel").addEventListener("change",function(){
+  viewArr=Number($("arrSel").value)||0;
+  renderOrders();
+});
+$("arrDate").addEventListener("change",function(){
+  var v=vArr(),d=$("arrDate").value,r=arrRow(v);
+  if(r){
+    save(r,{dateCommande:d});
+    renderArrBar();
+    return;
+  }
+  if(!d)return;
+  setStatus("Enregistrement...");
+  api("POST","/orders",{cliente:"Arrivage n°"+v,type:PARC,rubrique:"Arrivage",numero:v,dateCommande:d,qte:0,regle:0,total:0,frais:0}).then(function(res){
+    journey.push(res.order);
+    renderJourney();
+    renderArrBar();
+    setStatus("Enregistré");
+  }).catch(function(e){setStatus("Erreur : "+e.message,true);});
+});
+$("arrNewBtn").addEventListener("click",function(){
+  $("arrNewDate").value=todayStr();
+  $("arrNew").hidden=!$("arrNew").hidden;
+});
+$("arrNewNo").addEventListener("click",function(){$("arrNew").hidden=true;});
+$("arrNewOk").addEventListener("click",function(){
+  var d=$("arrNewDate").value||todayStr();
+  var n=curArr()+1;
+  setStatus("Création de l'arrivage...");
+  api("POST","/orders",{cliente:"Arrivage n°"+n,type:PARC,rubrique:"Arrivage",numero:n,dateCommande:d,qte:0,regle:0,total:0,frais:0}).then(function(res){
+    journey.push(res.order);
+    viewArr=0;
+    $("arrNew").hidden=true;
+    renderJourney();
+    renderOrders();
+    setStatus("Arrivage n°"+n+" créé");
+  }).catch(function(e){setStatus("Erreur : "+e.message,true);});
 });
 
 function setCapture(on){
